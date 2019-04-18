@@ -2,8 +2,11 @@ from time import sleep
 
 
 class TankCannon:
-    def __init__(self, GPIO, angleStepperMotor, gearRatio=1):
+    def __init__(self, GPIO, pin_Cannon, angleStepperMotor, gearRatio=1):
         self.GPIO = GPIO
+        GPIO.setup(pin_Cannon, GPIO.OUT)
+        GPIO.output(pin_Cannon, 1)
+        self.cannonPin = pin_Cannon
         self.angleStepper = angleStepperMotor
         self.gearRatio = gearRatio
     
@@ -13,6 +16,9 @@ class TankCannon:
             self.angleStepper.stepRev(self.GPIO, 0 - steps)
         else:
             self.angleStepper.stepFwd(self.GPIO, steps)
+    
+    def fireCannonToggle(self):
+        self.GPIO.output(self.cannonPin, not self.GPIO.input(self.cannonPin))
 
 class StepperMotor:
     step_seq = [
@@ -33,7 +39,7 @@ class StepperMotor:
         self.pins = (pin_INA1, pin_INB1, pin_INA2, pin_INB2)
         self.stepTime = motorSteps * motorRpm / 60000 / 100 # steps * rev/min * 60000ms / min 
     
-    def stepFwd(self, GPIO, steps=1):
+    def stepFwd(self, GPIO, steps):
         for i in range(steps):
             self.lastStep_seq += 1
             #restart sequence if it reaches max
@@ -44,7 +50,7 @@ class StepperMotor:
             GPIO.output(self.pins, self.step_seq[self.lastStep_seq])
             sleep(self.stepTime)
 
-    def stepRev(self, GPIO, steps=1):
+    def stepRev(self, GPIO, steps):
         for i in range(steps):
             self.lastStep_seq -= 1
             #restart sequence if it reaches 0

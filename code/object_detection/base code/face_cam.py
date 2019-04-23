@@ -9,7 +9,7 @@ import numpy as np
 stream = io.BytesIO()
 cam = picamera.PiCamera()
 cam.resolution = (320,240)
-face_cascade = cv2.CascadeClassifier('faces.xml')
+face_cascade = cv2.CascadeClassifier('shirt.xml')
 
 print(cv2.__version__)
 
@@ -23,6 +23,7 @@ while True:
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
     faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+    # green range from RGB (124,252,0) to (85,107,47)
 
     for (x,y,w,h) in faces:
         cv2.rectangle(frame,(x,y),(x+w,y+h),(255,255,0),2)

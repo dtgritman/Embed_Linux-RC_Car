@@ -9,7 +9,7 @@ import numpy as np
 stream = io.BytesIO()
 cam = picamera.PiCamera()
 cam.resolution = (320,240)
-face_cascade = cv2.CascadeClassifier('shirt.xml')
+face_cascade = cv2.CascadeClassifier('body.xml')
 green = 60
 sensitivity = 15
 print(cv2.__version__)
@@ -22,8 +22,10 @@ while True:
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     faces = face_cascade.detectMultiScale(gray, 1.02, 5)
+    color_frame = frame
     for (x,y,w,h) in faces:
         cv2.rectangle(frame,(x,y),(x+w,y+h),(255,255,0),2)
+        color_frame = frame[y:y+h, x:x+w]
     frame = cv2.resize(frame,(640,480))
     # loop over the boundaries
     # create NumPy arrays from the boundaries
@@ -36,9 +38,9 @@ while True:
     output = cv2.bitwise_and(frame, frame, mask=mask)
 #    output = cv2.medianBlur(output, 5)
     # show the images
-    cv2.imshow("images",  output)
+    cv2.imshow('images',  output)
     cv2.imshow('Video', frame)
-
+    cv2.imshow('color frame', color_frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         cv2.destroyAllWindows()

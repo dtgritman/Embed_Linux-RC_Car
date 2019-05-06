@@ -1,9 +1,3 @@
-# this code is from https://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/
-# will be used as a base to build functionality required for this project
-# USAGE
-# python motion_detector.py
-# python motion_detector.py --video videos/example_01.mp4
-
 # import the necessary packages
 from imutils.video import VideoStream
 import argparse
@@ -96,3 +90,8 @@ while True:
 # cleanup the camera and close any open windows
 vs.stop() if args.get("video", None) is None else vs.release()
 cv2.destroyAllWindows()
+# this code is from https://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/
+# will be used as a base to build functionality required for this project
+# USAGE
+# python motion_detector.py
+# python motion_detector.py --video videos/example_01.mp4

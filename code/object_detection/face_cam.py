@@ -13,6 +13,7 @@ cam.resolution = (320,240)
 face_cascade = cv2.CascadeClassifier('body.xml')
 green = 60
 sensitivity = 15
+green_frames = 0
 print(cv2.__version__)
 vs = PiVideoStream().start()
 while True:
@@ -20,7 +21,7 @@ while True:
     #frame = np.fromstring(stream.getvalue(), dtype=np.uint8)
     #stream.seek(0)
     frame = vs.read()
-    #frame = cv2.imdecode(frame, 1)
+    frame = cv2.imdecode(frame, 1)
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     faces = face_cascade.detectMultiScale(gray, 1.02, 5)
@@ -28,6 +29,9 @@ while True:
     for (x,y,w,h) in faces:
         cv2.rectangle(frame,(x,y),(x+w,y+h),(255,255,0),2)
         color_frame = frame[y:y+h, x:x+w]
+    for (x,y) in color_frame:
+        if np.any(color_frame[x,y] != 0):
+            green_frames = green_frames + 1
     frame = cv2.resize(frame,(640,480))
     # loop over the boundaries
     # create NumPy arrays from the boundaries

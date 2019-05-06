@@ -17,24 +17,27 @@ class TankCannon:
         self.rotationServo = GPIO.PWM(pin_RotationServo, 50)
         self.rotationServo.start(0)
         
+        #initialize stepper motor angle
+        self.curVAngle = -90
+        self.setVAngle(0)
+        
         #set variables
         self.cannonPin = pin_Cannon
         self.angleStepper = angleStepperMotor
         self.stepperGearRatio = stepper_GearRatio
-        
-        self.curVAngle = -90
     
-    def changeVAngle(self, degrees):
+    def setVAngle(self, degrees):
         #limit vertical angle
-        if curVAngle + degrees > 60:
-            degrees = 60 - curVAngle
-            curVAngle = 60
-        elif curVAngle + degrees < -60:
-            degrees = -60 - curVAngle 
-            curVAngle = -60
+        if  degrees > 90:
+            degrees = 90
+        elif degrees < -90:
+            degrees = -90
         
-        steps = int((degrees * self.stepperGearRatio) / (360 / self.angleStepper.steps))
-        if degrees < 0:
+        changeDegrees = degrees - curVAngle
+        curVAngle = degrees
+        
+        steps = int((changeDegrees * self.stepperGearRatio) / (360 / self.angleStepper.steps))
+        if changeDegrees < 0:
             self.angleStepper.stepRev(self.GPIO, 0 - steps)
         else:
             self.angleStepper.stepFwd(self.GPIO, steps)

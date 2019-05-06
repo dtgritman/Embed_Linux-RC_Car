@@ -15,25 +15,20 @@ cannon = TankCannon(GPIO, pinCannon, pinServo, StepperMotor(GPIO, AIN1, AIN2, BI
 curAngle = 0
 try:
     while True:
-        control = input("Enter Change Angle (in degrees): ")
-        if control == "f":
-            cannon.fireCannonToggle()
-        elif control == "b":
-            control = input("Set Base Rotation (in degrees): ")
-            control = float(control)
-            cannon.setBaseRotation(control)
-        else:
-            try:
-                angle = int(control)
-                if curAngle + angle >= 0 and curAngle + angle <= 180:
-                    curAngle = curAngle + angle
-                    cannon.changeVAngle(angle)
-                else:
-                    print("Angle out of range.")
-            except:
-                print("Input must be an inter or f.")
+        control = input("Enter f (laser toggle), b (base rotation), or v (vertical angle): ")
+        try:
+            if control == "f":
+                cannon.fireCannonToggle()
+            elif control == "b":
+                control = input("Set Base Rotation (in degrees): ")
+                control = float(control)
+                cannon.setBaseRotation(control)
+            else:
+                cannon.setVAngle(int(control))
+        except:
+            print("Hmm, seems like you don't know how to enter a number")
 except KeyboardInterrupt:
-    cannon.changeVAngle(0 - curAngle)
+    cannon.setVAngle(-90)
     print('Done!')
 
 finally:

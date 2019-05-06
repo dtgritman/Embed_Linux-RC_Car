@@ -2,20 +2,50 @@ from time import sleep
 
 
 class TankCannon:
-    def __init__(self, GPIO, pin_Cannon, angleStepperMotor, gearRatio=1):
+    def __init__(self, GPIO, pin_Cannon, pin_RotationServo, angleStepperMotor, stepper_GearRatio=1, rotationServo_Offset=0):
         self.GPIO = GPIO
+        #initialize GPIO
+        GPIO.setup(pin_RotationServo, GPIO.OUT)
         GPIO.setup(pin_Cannon, GPIO.OUT)
         GPIO.output(pin_Cannon, 1)
+        
+        #initialize servo and variables needed
+        self.rotationServo_Min = 2
+        self.rotationServo_Max = 12.5
+        self.rotationServo_AngleConvert = (self.rotationServo_Max - self.rotationServo_Min) / 180
+        self.rotationServoMid = ((self.rotationServo_Max - self.rotationServo_Min) / 2) + self.rotationServo_Min + rotationServo_Offset
+        self.rotationServo = GPIO.PWM(pin_RotationServo, 50)
+        self.rotationServo.start(0)
+        
+        #set variables
         self.cannonPin = pin_Cannon
         self.angleStepper = angleStepperMotor
-        self.gearRatio = gearRatio
+        self.stepperGearRatio = stepper_GearRatio
+        
+        self.curVAngle = -90
     
-    def changeAngle(self, degrees):
-        steps = int((degrees * self.gearRatio) / (360 / self.angleStepper.steps))
+    def changeVAngle(self, degrees):
+        #limit vertical angle
+        if curVAngle + degrees > 60:
+            degrees = 60 - curVAngle
+            curVAngle = 60
+        elif curVAngle + degrees < -60:
+            degrees = -60 - curVAngle 
+            curVAngle = -60
+        
+        steps = int((degrees * self.stepperGearRatio) / (360 / self.angleStepper.steps))
         if degrees < 0:
             self.angleStepper.stepRev(self.GPIO, 0 - steps)
         else:
             self.angleStepper.stepFwd(self.GPIO, steps)
+    
+    def setBaseRotation(self, degrees):
+        if degrees < -45:
+            degrees = -45
+        elif degrees > 45:
+            degrees = 45
+        
+        self.rotationServo.ChangeDutyCycle(self.rotationServoMid + (degrees * self.rotationServo_AngleConvert))
     
     def fireCannonToggle(self):
         self.GPIO.output(self.cannonPin, not self.GPIO.input(self.cannonPin))

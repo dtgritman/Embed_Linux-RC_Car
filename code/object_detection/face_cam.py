@@ -7,15 +7,17 @@ import picamera.array
 import numpy as np
 import imutils
 # green range from RGB (124,252,0) to (85,107,47)
-stream = io.BytesIO()
+#stream = io.BytesIO()
 cam = picamera.PiCamera()
 cam.resolution = (320,240)
+cam.framerate = 32
 face_cascade = cv2.CascadeClassifier('body.xml')
 green = 60
 sensitivity = 15
-green_frames = 0
+green_pixels = 0
 print(cv2.__version__)
 vs = PiVideoStream().start()
+time.sleep(2.0)
 while True:
     #cam.capture(stream, format='jpeg', use_video_port=True)
     #frame = np.fromstring(stream.getvalue(), dtype=np.uint8)
@@ -31,7 +33,8 @@ while True:
         color_frame = frame[y:y+h, x:x+w]
     for (x,y) in color_frame:
         if np.any(color_frame[x,y] != 0):
-            green_frames = green_frames + 1
+            green_pixels = green_pixels + 1
+		#if (green_pixels >= (x * y)/2
     frame = cv2.resize(frame,(640,480))
     # loop over the boundaries
     # create NumPy arrays from the boundaries
@@ -51,5 +54,6 @@ while True:
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         cv2.destroyAllWindows()
-        print("Exiting")
+        vs.stop()
+		print("Exiting")
         break

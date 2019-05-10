@@ -2,8 +2,11 @@ from time import sleep
 import pigpio
 
 class TankCannon:
-    def __init__(self, pi, pin_Cannon, pin_RotationServo, angleStepperMotor, stepper_GearRatio=1, cannonRelay_active="HIGH", rotationServo_Offset=0):
-        self.pi = pi
+    def __init__(self, pin_Cannon, pin_RotationServo, angleStepperMotor, stepper_GearRatio=1, cannonRelay_active="HIGH", rotationServo_Offset=0):
+        self.pi = pigpio.pi()
+        if not self.pi.connected:
+            print("Pi not connected to pigpio.")
+            return
         
         # GPIO pin locations
         self.cannonPin = pin_Cannon
@@ -72,6 +75,8 @@ class TankCannon:
         self.fireCannon(0) # shut off cannon
         self.pi.set_servo_pulsewidth(self.rotationServoPin, 0) # shut off servo motor
         self.angleStepper.stop() # shut off stepper motor
+        
+        self.pi.stop()
 
 class StepperMotor:
     step_seq = [
@@ -82,8 +87,11 @@ class StepperMotor:
     ]
     lastStep_seq = 0
     
-    def __init__(self, pi, pin_INA1, pin_INA2, pin_INB1, pin_INB2, motorSteps=200, motorRpm=50):
-        self.pi = pi
+    def __init__(self, pin_INA1, pin_INA2, pin_INB1, pin_INB2, motorSteps=200, motorRpm=50):
+        self.pi = pigpio.pi()
+        if not self.pi.connected:
+            print("Pi not connected to pigpio.")
+            return
         
         # initialize GPIO
         self.pi.set_mode(pin_INA1, pigpio.OUTPUT)
@@ -126,3 +134,5 @@ class StepperMotor:
         # set all pins to off
         for pin in range(4):
             self.pi.write(self.pins[pin], 0)
+        
+        self.pi.stop()

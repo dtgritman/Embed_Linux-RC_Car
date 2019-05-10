@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+import pigpio
 from Cannon import TankCannon, StepperMotor
 
 
@@ -9,27 +9,35 @@ AIN1 = 6
 BIN1 = 19
 BIN2 = 26
 
-GPIO.setmode(GPIO.BCM)
-cannon = TankCannon(GPIO, pinCannon, pinServo, StepperMotor(GPIO, AIN1, AIN2, BIN1, BIN2), 3)
+#initialize pi for pigpio and check if connected
+pi = pigpio.pi()
+if not pi.connected:
+    print("Pi not connected to pigpio.")
+    exit()
 
-curAngle = 0
+cannon = TankCannon(pi, pinCannon, pinServo, StepperMotor(pi, AIN1, AIN2, BIN1, BIN2), 3)
+
 try:
     while True:
-        control = input("Enter f (laser toggle), b (base rotation), or v (vertical angle): ")
+        control = input("Enter f (laser), b (base rotation), or v (cannon angle): ")
         try:
             if control == "f":
-                cannon.fireCannonToggle()
+                control = input("Set Cannon off/on (0/1): ")
+                if int(control) == 1:
+                    cannon.fireCannon(1)
+                else:
+                    cannon.fireCannon(0)
             elif control == "b":
                 control = input("Set Base Rotation (in degrees): ")
-                control = float(control)
-                cannon.setBaseRotation(control)
-            else:
-                cannon.setVAngle(int(control))
+                cannon.setBaseRotation(int(control))
+            elif control == "v":
+                control = input("Set Cannon Angle (in degrees): ")
+                cannon.setCannonAngle(int(control))
         except:
             print("Hmm, seems like you don't know how to enter a number")
 except KeyboardInterrupt:
-    cannon.setVAngle(-90)
     print('Done!')
 
 finally:
-    GPIO.cleanup()
+    cannon.stop()
+    pi.stop()

@@ -1,3 +1,21 @@
+## Required Software Setup
+Required software setup for the nerf_module:
+
+To prevent issues with the motors used in the cannon we have used the pigpio library and daemon.
+The pigpio library can be installed using the command
+```
+~$ sudo apt-get install pigpio python-pigpio python3-pigpio
+```
+
+This library requires the pigpio daemon to be running, this can either be started every time using
+```
+~$ sudo pigpiod
+```
+or can be set to run on startup by using the command
+```
+~$ sudo systemctl enable pigpiod
+```
+
 ## Assembly of Cannon
 #### Parts Needed
 - Stepper Motor (NEMA 17)

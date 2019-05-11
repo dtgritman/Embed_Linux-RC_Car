@@ -2,7 +2,8 @@ window.onload = resetManualMode;
 updateDetectionsTable();
 setInterval(updateDetectionsTable, 15000);
 
-var obj, x, y, prev_x, prev_y;
+var obj, x, y, prev_x, prev_y, cannonState;
+cannonState = 0;
 
 function drag(e) {
     if (e.target.id != "drive_ball" && e.target.id != "cannon_ball")
@@ -27,7 +28,7 @@ function move(e) {
     
     // If the object specifically is selected, then move it to the X/Y coordinates that are always being tracked.
     if (obj) {
-        var box, newX, newY;
+        var box, newX, newY, relX, relY;
     
         if (obj.id == "drive_ball") {
             box = document.getElementById("drive_box");
@@ -51,6 +52,13 @@ function move(e) {
         else if (newY > box.offsetTop + box.offsetHeight - obj.offsetHeight) {
             newY = box.offsetTop + box.offsetHeight - obj.offsetHeight;
         }
+        
+        
+        if (obj.id == "drive_ball") {
+            // TODO: Setup webpage call for steering/drive
+        }
+        else if (obj.id == "cannon_ball")
+            updateCannonPos();
         
         obj.style.left = newX + "px";
         obj.style.top = newY + "px";
@@ -76,6 +84,9 @@ function centerBall(boxElem, ballElem) {
     
     ball.style.left = (box.offsetLeft + box.offsetWidth / 2 - ball.offsetWidth / 2) + "px";
     ball.style.top = (box.offsetTop + box.offsetHeight / 2 - ball.offsetWidth / 2) + "px";
+    
+    if (ballElem == "cannon_ball")
+        updateCannonPos();
 }
 
 function resetManualMode() {
@@ -88,6 +99,7 @@ function resetManualMode() {
 
 function changeMode(mode) {
     if (mode == "manual") {
+        document.getElementById("toggleCannonBtn").style.display = "block";
         document.getElementById("manual_controls").style.display = "block";
         document.getElementById("controlsBtn_reset").style.display = "block";
         document.getElementById("modeBtn_manual").style.display = "none";
@@ -95,6 +107,7 @@ function changeMode(mode) {
     }
     else if (mode == "auto") {
         centerBall("cannon_box", "cannon_ball");
+        document.getElementById("toggleCannonBtn").style.display = "none";
         document.getElementById("manual_controls").style.display = "none";
         document.getElementById("controlsBtn_reset").style.display = "none";
         document.getElementById("modeBtn_manual").style.display = "block";
@@ -120,6 +133,26 @@ function updateDetectionsTable() {
         }
         $("#detections_info").html(tableData);
     });
+}
+
+function updateCannonPos() {
+    var relX, relY;
+    var ball = document.getElementById("cannon_ball");
+    var box =  document.getElementById("cannon_box");
+    var cannonPos = { "cannonAngle": 0, "cannonBaseAngle": 0, "cannonState": cannonState };
+    relX = ball.offsetLeft - box.offsetLeft;
+    cannonPos["cannonBaseAngle"] = Math.round((relX - (box.offsetWidth / 2) + (ball.offsetWidth / 2)) *  (90 / (box.offsetWidth - (ball.offsetWidth / 2))));
+    relY = ball.offsetTop - box.offsetTop;
+    cannonPos["cannonAngle"] = Math.round(-(relY - (box.offsetHeight / 2) + (ball.offsetHeight / 2)) * (180 / (box.offsetHeight - (ball.offsetHeight / 2))));
+    $.post('/cannoncontrol', cannonPos);
+}
+
+function toggleCannonState() {
+    if (!cannonState)
+        cannonState = 1;
+    else
+        cannonState = 0;
+    updateCannonPos();
 }
 
 // Make a specific element movable

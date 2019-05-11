@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>HvZ Tank</title>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <style>
+    .disable-select {
+      user-select: none; /* supported by Chrome and Opera */
+      -webkit-user-select: none; /* Safari */
+      -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+    }
+    
+    body { text-align: center; }
+    
+    h3 { margin: 0px; }
+    
+    table { border-collapse: collapse; margin-left: auto; margin-right: auto; }
+    
+    td { border: 1px solid black; }
+    
+    button { display: block; margin-left: auto; margin-right: auto; }
+    
+    #controls { display: inline-block; }
+    
+    #options {
+      float: left;
+      width: 100%;
+    }
+    
+    #camera_feed {
+      width: 640px;
+      height: 480px;
+      display: inline-block;
+    }
+    
+    #drive_ball {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 10px;
+      left: 10px;
+      background: #0044ff;
+      border-radius: 100%;
+      box-shadow: inset 0 0 10px #000;
+    }
+    
+    #cannon_ball {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50px;
+      left: 10px;
+      background: #0044ff;
+      border-radius: 100%;
+      box-shadow: inset 0 0 10px #000;
+    }
+    
+    #modeBtn_manual { display: none; }
+    
+    .control_box {
+      float: left;
+      width: 300px;
+      height: 300px;
+      border: 1px solid black;
+    }
+  </style>
+</head>
+
+
+<body>
+  <h1 class="disable-select">Human vs Zombies Tank</h1>
+  <div id="controls" class="disable-select">
+    <div id="manual_controls">
+      <h3>Manual Controls</h3>
+      <div id="drive_box" class="control_box">Drive</div>
+      <div id="cannon_box" class="control_box">Cannon</div>
+      <div id="drive_ball"></div>
+      <div id="cannon_ball"></div>
+    </div>
+    
+    <div id="options">
+      <h3>Options</h3>
+      <button id="controlsBtn_reset" onclick="resetManualMode()">Reset Controls</button><br>
+      <button id="modeBtn_manual" onclick="changeMode('manual')">Activate Manual Mode</button>
+      <button id="modeBtn_auto" onclick="changeMode('auto')">Activate Automatic Mode</button>
+    </div>
+  </div>
+  
+  <div id="camera_feed" class="disable-select">
+    <h3>Camera Feed</h3>
+  </div>
+  
+  <div id="detections" class="disable-select">
+    <h3>Detections</h3>
+    
+    <div id="detections_display"></div>
+    <br>
+    <table id="detections_info"></table>
+    
+    
+  </div>
+  
+  <script src="{{ url_for('static', filename='web.js') }}"></script>
+</body>
+
+</html>

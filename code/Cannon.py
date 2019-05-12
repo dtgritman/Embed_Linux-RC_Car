@@ -36,13 +36,36 @@ class TankCannon:
         else:
             self.cannonStates = [0, 1]
         
+        
+        self.curVAngle = -90 # cannon starts off facing down
+        self.active = 0
+        self.activate()
+        
+    # initialize cannon and motors
+    def activate(self):
+        self.active = 1
         # make sure cannon is inactive at start
         self.fireCannon(0)
+        # set servo to middle
+        self.setBaseRotation(0)
         # initialize stepper motor angle
-        self.curVAngle = -90
         self.setCannonAngle(0)
     
+    # turn the cannon and motors off
+    def deactivate(self):
+        # set cannon angle to resting postion and deactivate stepper motor
+        self.setCannonAngle(-90)
+        self.angleStepper.deactivate()
+        # shut off cannon
+        self.fireCannon(0)
+        # shut off servo motor
+        self.pi.set_servo_pulsewidth(self.rotationServoPin, 0)
+        self.active = 0
+    
+    # set the vertical angle of the cannon
     def setCannonAngle(self, degrees):
+        if not self.active:
+            return
         # limit vertical angle
         if  degrees > self.angleStepperMax:
             degrees = self.angleStepperMax
@@ -59,7 +82,10 @@ class TankCannon:
         else:
             self.angleStepper.stepFwd(steps)
     
+    # set the rotation of the base
     def setBaseRotation(self, degrees):
+        if not self.active:
+            return
         if degrees < -45:
             degrees = -45
         elif degrees > 45:
@@ -67,15 +93,15 @@ class TankCannon:
         
         self.pi.set_servo_pulsewidth(self.rotationServoPin, self.rotationServoMid + (degrees * self.rotationServoAngleConversion))
     
+    # set the cannon state (0: off, 1: on)
     def fireCannon(self, state):
+        if not self.active:
+            return
         self.pi.write(self.cannonPin, self.cannonStates[state])
     
+    # deactivate the cannon and stop the connection to the pigpio
     def stop(self):
-        self.setCannonAngle(-90) # set cannon angle to resting postion
-        self.fireCannon(0) # shut off cannon
-        self.pi.set_servo_pulsewidth(self.rotationServoPin, 0) # shut off servo motor
-        self.angleStepper.stop() # shut off stepper motor
-        
+        self.deactivate()
         self.pi.stop()
 
 class StepperMotor:
@@ -85,7 +111,6 @@ class StepperMotor:
         (0,0,1,1),
         (1,0,0,1)
     ]
-    lastStep_seq = 0
     
     def __init__(self, pin_INA1, pin_INA2, pin_INB1, pin_INB2, motorSteps=200, motorRpm=50):
         self.pi = pigpio.pi()
@@ -103,7 +128,16 @@ class StepperMotor:
         self.rpm = motorRpm
         self.pins = (pin_INA1, pin_INB1, pin_INA2, pin_INB2)
         self.stepTime = motorSteps * motorRpm / 60000 / 100 # steps * rev/min * 60000ms / min 
+        
+        self.lastStep_seq = 4
     
+    # deactivate the stepper motor
+    def deactivate(self):
+        # set all pins to off
+        for pin in range(4):
+            self.pi.write(self.pins[pin], 0)
+    
+    # move the stepper motor CW a number of steps
     def stepFwd(self, steps):
         for i in range(steps):
             self.lastStep_seq += 1
@@ -112,11 +146,11 @@ class StepperMotor:
                 self.lastStep_seq = 0
                 
             # step motor forward
-            #self.pi.write(self.pins, self.step_seq[self.lastStep_seq])
             for pin in range(4):
                 self.pi.write(self.pins[pin], self.step_seq[self.lastStep_seq][pin])
             sleep(self.stepTime)
-
+    
+    # move the stepper motor CCW a number of steps
     def stepRev(self, steps):
         for i in range(steps):
             self.lastStep_seq -= 1
@@ -125,14 +159,11 @@ class StepperMotor:
                 self.lastStep_seq = len(self.step_seq) - 1
                 
             # step motor backwards
-            #self.pi.write(self.pins, self.step_seq[self.lastStep_seq])
             for pin in range(4):
                 self.pi.write(self.pins[pin], self.step_seq[self.lastStep_seq][pin])
             sleep(self.stepTime)
     
+    # deactive the stepper motor and stop the pigpio connection
     def stop(self):
-        # set all pins to off
-        for pin in range(4):
-            self.pi.write(self.pins[pin], 0)
-        
+        self.deactivate()
         self.pi.stop()

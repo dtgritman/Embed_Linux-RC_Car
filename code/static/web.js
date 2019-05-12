@@ -4,6 +4,7 @@ setInterval(updateDetectionsTable, 15000);
 
 var obj, x, y, prev_x, prev_y, cannonState;
 cannonState = 0;
+cannonActive = 1;
 
 function drag(e) {
     if (e.target.id != "drive_ball" && e.target.id != "cannon_ball")
@@ -152,7 +153,17 @@ function toggleCannonState() {
         cannonState = 1;
     else
         cannonState = 0;
+    
     updateCannonPos();
+}
+
+function toggleCannonActive() {
+    if (!cannonActive)
+        cannonActive = 1;
+    else
+        cannonActive = 0;
+    
+    $.post('/cannonactive', { "cannonActive": cannonActive });
 }
 
 // Make a specific element movable

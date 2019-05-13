@@ -33,7 +33,7 @@ while True:
     for (x,y,w,h) in shirts:
         # rectangle is half the height of body detected
         cv2.rectangle(frame,(x,y),(x+w,y+(h/2)),(255,255,0),2)
-        print("Coordinates of center are x:" + (x + w/2) + " y: " + (y + h/2))
+        print("Coordinates of center are x:" + str((int(x) + int(w)/2)) + " y: " + str((int(y) + int(h)/2)))
     #    color_frame = frame[y:y+h, x:x+w]
     frame = cv2.resize(frame,(640,480))
     # loop over the boundaries

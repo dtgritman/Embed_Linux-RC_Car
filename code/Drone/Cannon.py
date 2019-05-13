@@ -62,6 +62,22 @@ class TankCannon:
         self.pi.set_servo_pulsewidth(self.rotationServoPin, 0)
         self.active = 0
     
+    # set cannon position based on x,y coordinates
+    def setCannonPos(self, x, y, width=320, height=240):
+        midX = width / 2
+        if x < midX:
+            xDegrees = -(midX - x) * (90 / width)
+        else:
+            xDegrees = (x - midX) * (90 / width)
+        setBaseRotation(xDegrees)
+        
+        midY = height / 2
+        if y < midY:
+            yDegrees = -(midY - y) * (90 / height)
+        else:
+            yDegrees = (y - midY) * (90 / height)
+        setCannonAngle(yDegrees)
+    
     # set the vertical angle of the cannon
     def setCannonAngle(self, degrees):
         if not self.active:

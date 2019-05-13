@@ -1,29 +1,30 @@
-#from imutils.video.pivideostream import PiVideoStream
+from imutils.video.pivideostream import PiVideoStream
 import io
 import time
 import cv2
 import picamera
 import picamera.array
 import numpy as np
-#import imutils
+import imutils
 stream = io.BytesIO()
-cam = picamera.PiCamera()
-cam.resolution = (320,240)
+#cam = picamera.PiCamera()
+#cam.resolution = (320,240)
 #cam.framerate = 32
 shirt_cascade = cv2.CascadeClassifier('body.xml')
 #green = 60
 #sensitivity = 15
 #green_pixels = 0
 print(cv2.__version__)
-#vs = PiVideoStream().start()
+vs = PiVideoStream().start()
 time.sleep(2.0)
 while True:
     # captures frames from camera, stores them in stream
-    cam.capture(stream, format='jpeg', use_video_port=True)
-    frame = np.fromstring(stream.getvalue(), dtype=np.uint8)
-    stream.seek(0)
-    #frame = vs.read()
-    frame = cv2.imdecode(frame, 1)
+    #cam.capture(stream, format='jpeg', use_video_port=True)
+    #frame = np.fromstring(stream.getvalue(), dtype=np.uint8)
+    #stream.seek(0)
+    frame = vs.read()
+    frame = imutils.resize(frame, width=360)
+    #frame = cv2.imdecode(frame, 1)
     # convert to grayscale for cascade detection
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -54,6 +55,6 @@ while True:
     #cv2.imshow('color frame', color_frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         cv2.destroyAllWindows()
-        #vs.stop()
+        vs.stop()
         print("Exiting")
         break

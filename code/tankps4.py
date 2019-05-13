@@ -20,12 +20,15 @@ def tank(tank):
     print(controller)
     
     #setup variables to track controller
-    cannonState = 0
+    cannonState = False
     curR1Trig = 0
     curLJsX = 127
     curLJsY = 127
     curRJsX = 127
     curRJsY = 127
+    
+    # activate cannon
+    cannon.activate()
     
     paused = False
     try:
@@ -74,15 +77,15 @@ def tank(tank):
             
             tank.setBaseRotation(int(servoPos))
             tank.setCannonAngle(int(stepperPos))
-            print("CannonState: {}, ServoPos: {}, StepperPos: {}".format(curR1Trig, int(servoPos), int(stepperPos)))
+            print("CannonState: {}, ServoPos: {}, StepperPos: {}".format(cannonState, int(servoPos), int(stepperPos)))
         
     except OSError:
         print("{} - Controller Disconnected!".format(time.strftime("%H:%M:%S")))
-        return False
+        return True
     
     except KeyboardInterrupt:
         print("\nConnection Closed!")
-        return True
+        return False
 
 
 #------------ MAIN ------------
@@ -95,8 +98,10 @@ BIN2 = 26
 
 cannon = TankCannon(pinCannon, pinServo, StepperMotor(AIN1, AIN2, BIN1, BIN2), 3)
 try:
-    #create rc car object and setup gun
-    while not tank(cannon):
+    # run cannon while controller connected
+    while tank(cannon):
+        # if controller disconnected: stop tank
+        cannon.deactivate()
         time.sleep(5)
 
 except KeyboardInterrupt:

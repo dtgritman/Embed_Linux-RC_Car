@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 import sqlite3 as sqlite
 import json
-from Cannon import TankCannon, StepperMotor
+from Drone.Cannon import TankCannon, StepperMotor
 
 pinCannon = 20
 pinServo = 21

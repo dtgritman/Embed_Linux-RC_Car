@@ -4,7 +4,7 @@ setInterval(updateDetectionsTable, 15000);
 
 var obj, x, y, prev_x, prev_y, cannonState;
 cannonState = 0;
-cannonActive = 1;
+tankActive = 1;
 
 function drag(e) {
     if (e.target.id != "drive_ball" && e.target.id != "cannon_ball")
@@ -54,13 +54,13 @@ function move(e) {
             newY = box.offsetTop + box.offsetHeight - obj.offsetHeight;
         }
         
-        
-        if (obj.id == "drive_ball") {
-            // TODO: Setup webpage call for steering/drive
+        if (tankActive) {
+            if (obj.id == "drive_ball") {
+                // TODO: Setup webpage call for steering/drive
+            }
+            else if (obj.id == "cannon_ball")
+                updateCannonPos();
         }
-        else if (obj.id == "cannon_ball")
-            updateCannonPos();
-        
         obj.style.left = newX + "px";
         obj.style.top = newY + "px";
     }
@@ -157,13 +157,13 @@ function toggleCannonState() {
     updateCannonPos();
 }
 
-function toggleCannonActive() {
-    if (!cannonActive)
-        cannonActive = 1;
+function toggleTankActive() {
+    if (!tankActive)
+        tankActive = 1;
     else
-        cannonActive = 0;
+        tankActive = 0;
     
-    $.post('/cannonactive', { "cannonActive": cannonActive });
+    $.post('/tankactive', { "tankActive": tankActive });
 }
 
 // Make a specific element movable

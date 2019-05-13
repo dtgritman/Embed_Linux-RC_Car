@@ -37,10 +37,10 @@ def detectionLogJSON():
         print("Error %s:" % e.args[0])
         return
 
-@app.route('/cannonactive', methods=['POST'])
-def cannonActive():
-    canActive = int(request.form['cannonActive'])
-    if canActive:
+@app.route('/tankactive', methods=['POST'])
+def tankActive():
+    tankActive = int(request.form['tankActive'])
+    if tankActive:
         cannon.activate()
     else:
         cannon.deactivate()

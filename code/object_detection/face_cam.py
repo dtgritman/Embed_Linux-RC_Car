@@ -37,6 +37,7 @@ while True:
         print("Coordinates of center are x:" + str((int(x) + int(w)/2)) + " y: " + str((int(y) + int(h)/2)))
     #    color_frame = frame[y:y+h, x:x+w]
     frame = cv2.resize(frame,(640,480))
+    cv2.imwrite('test.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
     # loop over the boundaries
     # create NumPy arrays from the boundaries
     #lower_green = np.array([green - sensitivity, 100, 100])

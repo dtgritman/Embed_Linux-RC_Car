@@ -5,12 +5,12 @@ from Drone.Cannon import TankCannon, StepperMotor
 
 pinCannon = 20
 pinServo = 21
-AIN2 = 5
-AIN1 = 6
-BIN1 = 19
-BIN2 = 26
+stepperAIN2 = 5
+stepperAIN1 = 6
+stepperBIN1 = 19
+stepperBIN2 = 26
 
-cannon = TankCannon(pinCannon, pinServo, StepperMotor(AIN1, AIN2, BIN1, BIN2), 3)
+cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), 3)
 
 app = Flask(__name__)
 

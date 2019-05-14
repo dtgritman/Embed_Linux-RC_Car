@@ -6,7 +6,7 @@ import picamera
 import picamera.array
 import numpy as np
 import imutils
-stream = io.BytesIO()
+#stream = io.BytesIO()
 #cam = picamera.PiCamera()
 #cam.resolution = (320,240)
 #cam.framerate = 32

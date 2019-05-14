@@ -90,7 +90,6 @@ class TankCannon:
         
         changeDegrees = degrees - self.curVAngle
         steps = int(changeDegrees / self.angleStepperConversion)
-        print(changeDegrees / self.angleStepperConversion, steps)
         self.curVAngle = round(self.curVAngle + steps * self.angleStepperConversion, 2)
         
         if changeDegrees < 0:

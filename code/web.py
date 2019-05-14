@@ -1,5 +1,5 @@
 # imports
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
 import sqlite3 as sqlite
 import json
 from Drone.Cannon import TankCannon, StepperMotor
@@ -31,6 +31,17 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# make the camera feed stuff I hope
+def gen():
+    global frame
+    while True:
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    
+@app.route('/videofeed')
+def video_feed():
+    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/detectionlogs')
 def detectionLogJSON():
@@ -96,7 +107,7 @@ def cannonControl():
     return ""
 
 def runAutoDetection():
-    global tankActive, autoActive
+    global tankActive, autoActive, frame
     autoActive = 0
     
     shirt_cascade = cv2.CascadeClassifier('body.xml')
@@ -107,6 +118,8 @@ def runAutoDetection():
     con = sqlite.connect('../log/DetectionLogDB.db')
     cur = con.cursor()
     pic_number = 0
+    center_prevX = 0
+    center_prevY = 0
     while True:
         if not tankActive or not autoActive:
             continue
@@ -123,21 +136,26 @@ def runAutoDetection():
             center_x = int(x) + (int(w)/2)
             center_y = int(y) + (int(h)/2)
             #print("Coordinates of center are x:" + str((int(x) + int(w)/2)) + " y: " + str((int(y) + int(h)/2)))
-            # checks if filename exists already, if not then writes file appending number that does not exist yet
-            while os.path.exists('static/img/image%s.jpeg' % pic_number):
-                cv2.imwrite('static/img/image%s.jpeg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                # write timestamp, detection type, and image to SQLite db
-                current_time = time.strftime("%Y-%m-%d %H:%M:%S") 
-                detection_type = "unknown"
-                image_name = ("image%s.jpeg" % pic_number)
-                cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES(?,?,?);', (current_time, detection_type, image_name))
-                con.commit()
-                pic_number += 1
+            # check for large movements of the box to indicate unique target? idk? maybe? hopefully?
+            if (center_x - center_prevX) > 20 or (center_prevX - center_x) > 20 \
+                or (center_y - center_prevY) > 20 or (center_prevY - center_y) > 20:
+                # checks if filename exists already, if not then writes file appending number that does not exist yet
+                while os.path.exists('static/img/image%s.jpeg' % pic_number):
+                    cv2.imwrite('static/img/image%s.jpeg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                    # write timestamp, detection type, and image to SQLite db
+                    current_time = time.strftime("%Y-%m-%d %H:%M:%S") 
+                    detection_type = "unknown"
+                    image_name = ("image%s.jpeg" % pic_number)
+                    cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES(?,?,?);', (current_time, detection_type, image_name))
+                    con.commit()
+                    pic_number += 1
             cannon.setCannonPos(center_x, center_y)
+            cannon.fireCannon(1)
         # resize frame to 480p
         frame = cv2.resize(frame,(640,480))
-        # write frames individually to test.jpeg
-        
+        # write frames individually to stream.jpeg (definitely can be done better but can't do tests right now)
+        #cv2.imwrite('static/stream.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        # maybe making frame a global will do the trick and we can remove this? just maybe
 
 if __name__ == '__main__':
     try:

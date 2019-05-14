@@ -47,6 +47,16 @@ def tankActive():
     
     return ""
 
+@app.route('/carcontrol', methods=['POST'])
+def carControl():
+    steering = int(request.form['steering'])
+    # -1 = left, 0 = off, 1 = right
+    # TODO: Setup car steering
+    drive = int(request.form['drive'])
+    # -1 = reverse, 0 = off, 1 = forward
+    # TODO: Setup car drive
+    return ""
+
 @app.route('/cannoncontrol', methods=['POST'])
 def cannonControl():
     canState = int(request.form['cannonState'])

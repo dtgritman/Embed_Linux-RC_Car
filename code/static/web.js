@@ -57,6 +57,7 @@ function move(e) {
         if (tankActive) {
             if (obj.id == "drive_ball") {
                 // TODO: Setup webpage call for steering/drive
+                updateCar();
             }
             else if (obj.id == "cannon_ball")
                 updateCannonPos();
@@ -71,6 +72,7 @@ function drop() {
         if (obj.id == "drive_ball") {
             // set ball back to the center of the box
             centerBall("drive_box", "drive_ball");
+            updateCar();
         }
         // Revert to the default css style.
         obj.style.background = "";
@@ -141,11 +143,31 @@ function updateCannonPos() {
     var ball = document.getElementById("cannon_ball");
     var box =  document.getElementById("cannon_box");
     var cannonPos = { "cannonAngle": 0, "cannonBaseAngle": 0, "cannonState": cannonState };
-    relX = ball.offsetLeft - box.offsetLeft;
-    cannonPos["cannonBaseAngle"] = Math.round((relX - (box.offsetWidth / 2) + (ball.offsetWidth / 2)) *  (90 / (box.offsetWidth - (ball.offsetWidth / 2))));
-    relY = ball.offsetTop - box.offsetTop;
-    cannonPos["cannonAngle"] = Math.round(-(relY - (box.offsetHeight / 2) + (ball.offsetHeight / 2)) * (180 / (box.offsetHeight - (ball.offsetHeight / 2))));
+    relX = ball.offsetLeft - box.offsetLeft + (ball.offsetWidth / 2) - (box.offsetWidth / 2);
+    cannonPos["cannonBaseAngle"] = Math.round(relX * (90 / (box.offsetWidth - (ball.offsetWidth / 2))));
+    relY = -(ball.offsetTop - box.offsetTop + (ball.offsetHeight / 2) - (box.offsetHeight / 2));
+    cannonPos["cannonAngle"] = Math.round(relY * (180 / (box.offsetHeight - (ball.offsetHeight / 2))));
     $.post('/cannoncontrol', cannonPos);
+}
+
+function updateCar() {
+    var relX, relY;
+    var ball = document.getElementById("drive_ball");
+    var box =  document.getElementById("drive_box");
+    var carPos = { "steering": 0, "drive": 0 };
+    relX = ball.offsetLeft - box.offsetLeft + (ball.offsetWidth / 2) - (box.offsetWidth / 2);
+    if (relX > 30)
+        carPos["steering"] = 1;
+    else if (relX < -30)
+        carPos["steering"] = -1;
+    
+    relY = -(ball.offsetTop - box.offsetTop + (ball.offsetHeight / 2) - (box.offsetHeight / 2));
+    if (relY > 30)
+        carPos["drive"] = 1;
+    else if (relY < -30)
+        carPos["drive"] = -1;
+    
+    $.post('/carcontrol', carPos);
 }
 
 function toggleCannonState() {

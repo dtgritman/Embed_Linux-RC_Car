@@ -2,7 +2,8 @@
 from flask import Flask, render_template, request
 import sqlite3 as sqlite
 import json
-from Drone.Cannon import TankCannon, StepperMotor, setCannonPos
+from Drone.Cannon import TankCannon, StepperMotor
+
 from imutils.video.pivideostream import PiVideoStream
 import io
 import time
@@ -11,6 +12,7 @@ import picamera
 import picamera.array
 import numpy as np
 import imutils
+
 pinCannon = 20
 pinServo = 21
 stepperAIN2 = 5
@@ -30,7 +32,7 @@ def index():
 def detectionLogJSON():
     try:
         # connect to DetectionLog Database
-        con = sqlite.connect('log/DetectionLogDB.db')
+        con = sqlite.connect('../log/DetectionLogDB.db')
         cur = con.cursor()
         
         # store all the rows in the DetectionLog table in an array

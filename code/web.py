@@ -3,7 +3,6 @@ from flask import Flask, render_template, request
 import sqlite3 as sqlite
 import json
 from Drone.Cannon import TankCannon, StepperMotor
-
 from imutils.video.pivideostream import PiVideoStream
 import io
 import time
@@ -12,14 +11,14 @@ import picamera
 import picamera.array
 import numpy as np
 import imutils
-
+import os
 pinCannon = 20
 pinServo = 21
 stepperAIN2 = 5
 stepperAIN1 = 6
 stepperBIN1 = 19
 stepperBIN2 = 26
-
+pic_number = 0
 cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), 3)
 
 app = Flask(__name__)
@@ -84,6 +83,9 @@ if __name__ == '__main__':
         print(cv2.__version__)
         vs = PiVideoStream().start()
         time.sleep(2.0)
+        # connect to DetectionLog Database
+        con = sqlite.connect('../log/DetectionLogDB.db')
+        cur = con.cursor()
         while True:
             # captures frames individually from camera
             frame = vs.read()
@@ -98,11 +100,20 @@ if __name__ == '__main__':
                 center_x = int(x) + (int(w)/2)
                 center_y = int(y) + (int(h)/2)
                 #print("Coordinates of center are x:" + str((int(x) + int(w)/2)) + " y: " + str((int(y) + int(h)/2)))
-                setCannonPos(center_x, center_y)
+                # checks if filename exists already, if not then writes file appending number that does not exist yet
+                while os.path.exists('/images/pic%s.jpeg' % pic_number):
+                    cv2.imwrite('/images/pic%s.jpeg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                    # write timestamp, detection type, and image to SQLite db
+                    current_time = time.strftime("%Y-%m-%d %H:%M:%S") 
+                    detection_type = "unknown"
+                    image_name = ("pics%s.jpeg" % pic_number)
+                    cur.execute('''INSERT INTO DetectionLogs(date, type, image) VALUES(?,?,?)''', (current_time, detection_type, image_name))
+                    con.commit()
+                    pic_number += 1
+                cannon.setCannonPos(center_x, center_y)
             # resize frame to 480p
             frame = cv2.resize(frame,(640,480))
             # write frames individually to test.jpeg
-            cv2.imwrite('test.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
     except KeyboardInterrupt:
         vs.stop()
         pass

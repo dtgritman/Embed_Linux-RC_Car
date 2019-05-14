@@ -26,13 +26,13 @@ stepperBIN1 = 19
 stepperBIN2 = 26
 cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), 3)
 
-carAIN2 = 4
-carAIN1 = 17
-carPWMA = 18
-carBIN1 = 27
-carBIN2 = 22
-carPWMB = 23
-carSTBY = 24
+carAIN2 = 11 # (GPIO #17)
+carAIN1 = 12 # (GPIO #18)
+carPWMA = 7 # (GPIO #4)
+carBIN1 = 15 # (GPIO #22)
+carBIN2 = 16 # (GPIO #23)
+carPWMB = 18 # (GPIO #24)
+carSTBY = 13 # (GPIO #21)
 car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
 
 app = Flask(__name__)
@@ -41,6 +41,7 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+'''
 # make the camera feed stuff I hope
 def gen():
     global frame
@@ -51,7 +52,7 @@ def gen():
 @app.route('/videofeed')
 def video_feed():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
+'''
 @app.route('/detectionlogs')
 def detectionLogJSON():
     try:

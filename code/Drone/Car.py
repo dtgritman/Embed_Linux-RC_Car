@@ -8,11 +8,11 @@ class Car:
 
         self.STBY = STBY
         # Drive motor
-        self.speed_drive = PWMA
+        self.PWMA = PWMA
         self.AIN1 = AIN1
         self.AIN2 = AIN2
         # Left-Right controller
-        self.LR_ON = PWMB
+        self.PWMB = PWMB
         self.BIN1 = BIN1
         self.BIN2 = BIN2
 
@@ -27,26 +27,37 @@ class Car:
         GPIO.setup(PWMB, GPIO.OUT)  # Connected to PWMB
     
     def changeDrive(self, direction):
+        GPIO.output(self.STBY, GPIO.HIGH)
         if direction == 1:
-            GPIO.output(AIN1, GPIO.HIGH)
-            GPIO.output(AIN2, GPIO.LOW)
+            GPIO.output(self.AIN1, GPIO.HIGH)
+            GPIO.output(self.AIN2, GPIO.LOW)
+            GPIO.output(self.PWMA, GPIO.HIGH)
         elif direction == -1:
-            GPIO.output(AIN1, GPIO.LOW)
-            GPIO.output(AIN2, GPIO.HIGH)
+            GPIO.output(self.AIN1, GPIO.LOW)
+            GPIO.output(self.AIN2, GPIO.HIGH)
+            GPIO.output(self.PWMA, GPIO.HIGH)
         else:
-            GPIO.output(AIN1, GPIO.LOW)
-            GPIO.output(AIN2, GPIO.LOW)
+            GPIO.output(self.STBY, GPIO.LOW)
+            GPIO.output(self.AIN1, GPIO.LOW)
+            GPIO.output(self.AIN2, GPIO.LOW)
+            GPIO.output(self.PWMA, GPIO.LOW)
     
     def changeSteering(self, direction):
-        if direction == 1:
-            GPIO.output(BIN1, GPIO.HIGH)
-            GPIO.output(BIN2, GPIO.LOW)
-        elif direction == -1:
-            GPIO.output(BIN1, GPIO.LOW)
-            GPIO.output(BIN2, GPIO.HIGH)
+        print(direction)
+        GPIO.output(self.STBY, GPIO.HIGH)
+        if direction == -1:
+            GPIO.output(self.BIN1, GPIO.HIGH)
+            GPIO.output(self.BIN2, GPIO.LOW)
+            GPIO.output(self.PWMB, GPIO.HIGH)
+        elif direction == 1:
+            GPIO.output(self.BIN1, GPIO.LOW)
+            GPIO.output(self.BIN2, GPIO.HIGH)
+            GPIO.output(self.PWMB, GPIO.HIGH)
         else:
-            GPIO.output(BIN1, GPIO.LOW)
-            GPIO.output(BIN2, GPIO.LOW)
+            GPIO.output(self.STBY, GPIO.LOW)
+            GPIO.output(self.BIN1, GPIO.LOW)
+            GPIO.output(self.BIN2, GPIO.LOW)
+            GPIO.output(self.PWMB, GPIO.LOW)
     
     def reset(self):
         GPIO.output(self.STBY, GPIO.LOW)

@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, Response
 import sqlite3 as sqlite
 import json
 from Drone.Cannon import TankCannon, StepperMotor
+from Drone.Car import Car
 from threading import Thread
 from imutils.video.pivideostream import PiVideoStream
 import io
@@ -23,8 +24,16 @@ stepperAIN2 = 5
 stepperAIN1 = 6
 stepperBIN1 = 19
 stepperBIN2 = 26
-
 cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), 3)
+
+carAIN2 = 4
+carAIN1 = 17
+carPWMA = 18
+carBIN1 = 27
+carBIN2 = 22
+carPWMB = 23
+carSTBY = 24
+car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
 
 app = Flask(__name__)
 
@@ -70,6 +79,7 @@ def tankActive():
         cannon.activate()
     else:
         cannon.deactivate()
+        car.reset()
     
     return ""
 
@@ -82,21 +92,21 @@ def autoActive():
 
 @app.route('/carcontrol', methods=['POST'])
 def carControl():
-    global autoActive
-    if autoActive:
+    global tankActive, autoActive
+    if not tankActive:
         return ""
     steering = int(request.form['steering'])
     # -1 = left, 0 = off, 1 = right
-    # TODO: Setup car steering
+    car.changeSteering(steering)
     drive = int(request.form['drive'])
     # -1 = reverse, 0 = off, 1 = forward
-    # TODO: Setup car drive
+    car.changeDrive(drive)
     return ""
 
 @app.route('/cannoncontrol', methods=['POST'])
 def cannonControl():
-    global autoActive
-    if autoActive:
+    global tankActive, autoActive
+    if not tankActive or autoActive:
         return ""
     canState = int(request.form['cannonState'])
     cannon.fireCannon(canState)

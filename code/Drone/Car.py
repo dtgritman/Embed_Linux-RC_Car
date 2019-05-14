@@ -1,7 +1,6 @@
 import time 
 import RPi.GPIO as GPIO
 
-
 class Car:
 
     def __init__(self, STBY, PWMA, AIN2, AIN1, BIN1, BIN2, PWMB):
@@ -26,9 +25,29 @@ class Car:
         GPIO.setup(BIN1, GPIO.OUT)  # Connected to BIN1 
         GPIO.setup(BIN2, GPIO.OUT)  # Connected to BIN2 
         GPIO.setup(PWMB, GPIO.OUT)  # Connected to PWMB
-
     
-
+    def changeDrive(self, direction):
+        if direction == 1:
+            GPIO.output(AIN1, GPIO.HIGH)
+            GPIO.output(AIN2, GPIO.LOW)
+        elif direction == -1:
+            GPIO.output(AIN1, GPIO.LOW)
+            GPIO.output(AIN2, GPIO.HIGH)
+        else:
+            GPIO.output(AIN1, GPIO.LOW)
+            GPIO.output(AIN2, GPIO.LOW)
+    
+    def changeSteering(self, direction):
+        if direction == 1:
+            GPIO.output(BIN1, GPIO.HIGH)
+            GPIO.output(BIN2, GPIO.LOW)
+        elif direction == -1:
+            GPIO.output(BIN1, GPIO.LOW)
+            GPIO.output(BIN2, GPIO.HIGH)
+        else:
+            GPIO.output(BIN1, GPIO.LOW)
+            GPIO.output(BIN2, GPIO.LOW)
+    
     def reset(self):
         GPIO.output(self.STBY, GPIO.LOW)
 

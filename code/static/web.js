@@ -101,7 +101,9 @@ function resetManualMode() {
 }
 
 function changeMode(mode) {
+    var autoActive = 0;
     if (mode == "manual") {
+        autoActive = 0
         document.getElementById("toggleCannonBtn").style.display = "block";
         document.getElementById("manual_controls").style.display = "block";
         document.getElementById("controlsBtn_reset").style.display = "block";
@@ -109,6 +111,7 @@ function changeMode(mode) {
         document.getElementById("modeBtn_auto").style.display = "block";
     }
     else if (mode == "auto") {
+        autoActive = 1
         centerBall("cannon_box", "cannon_ball");
         document.getElementById("toggleCannonBtn").style.display = "none";
         document.getElementById("manual_controls").style.display = "none";
@@ -116,6 +119,7 @@ function changeMode(mode) {
         document.getElementById("modeBtn_manual").style.display = "block";
         document.getElementById("modeBtn_auto").style.display = "none";
     }
+    $.post('/autoactive', { "autoActive": autoActive });
 }
 
 function displayDetectionImage(datetime, image) {

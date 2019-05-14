@@ -21,12 +21,12 @@ class TankCannon:
         self.rotationServoMin = 1000
         self.rotationServoMax = 2000
         self.rotationServoMid = ((self.rotationServoMax - self.rotationServoMin) / 2) + self.rotationServoMin + rotationServo_Offset
-        self.rotationServoAngleConversion = (self.rotationServoMax - self.rotationServoMin) / 180
+        self.rotationServoAngleConversion = (self.rotationServoMax - self.rotationServoMin) / 180.0
         
         # set stepper min and max
-        self.angleStepperMin = -90
-        self.angleStepperMax = 90
-        self.angleStepperConversion = 360 / (angleStepperMotor.steps * stepper_GearRatio)
+        self.angleStepperMin = -90.0
+        self.angleStepperMax = 90.0
+        self.angleStepperConversion = 360.0 / (angleStepperMotor.steps * stepper_GearRatio)
         
         # set variables
         self.angleStepper = angleStepperMotor
@@ -37,7 +37,7 @@ class TankCannon:
             self.cannonStates = [0, 1]
         
         
-        self.curVAngle = -90 # cannon starts off facing down
+        self.curVAngle = -90.0 # cannon starts off facing down
         self.active = 0
         self.activate()
         
@@ -54,7 +54,7 @@ class TankCannon:
     # turn the cannon and motors off
     def deactivate(self):
         # set cannon angle to resting postion and deactivate stepper motor
-        self.setCannonAngle(-90)
+        self.setCannonAngle(-90.0)
         self.angleStepper.deactivate()
         # shut off cannon
         self.fireCannon(0)
@@ -66,16 +66,16 @@ class TankCannon:
     def setCannonPos(self, x, y, width=320, height=240):
         midX = width / 2
         if x < midX:
-            xDegrees = -(midX - x) * (90 / width)
+            xDegrees = -(midX - x) * (90.0 / width)
         else:
-            xDegrees = (x - midX) * (90 / width)
+            xDegrees = (x - midX) * (90.0 / width)
         setBaseRotation(xDegrees)
         
         midY = height / 2
         if y < midY:
-            yDegrees = -(midY - y) * (90 / height)
+            yDegrees = -(midY - y) * (180.0 / height)
         else:
-            yDegrees = (y - midY) * (90 / height)
+            yDegrees = (y - midY) * (180.0 / height)
         setCannonAngle(yDegrees)
     
     # set the vertical angle of the cannon
@@ -89,8 +89,8 @@ class TankCannon:
             degrees = self.angleStepperMin
         
         changeDegrees = degrees - self.curVAngle
-        
         steps = int(changeDegrees / self.angleStepperConversion)
+        print(changeDegrees / self.angleStepperConversion, steps)
         self.curVAngle = round(self.curVAngle + steps * self.angleStepperConversion, 2)
         
         if changeDegrees < 0:
@@ -143,7 +143,7 @@ class StepperMotor:
         self.steps = motorSteps
         self.rpm = motorRpm
         self.pins = (pin_INA1, pin_INB1, pin_INA2, pin_INB2)
-        self.stepTime = motorSteps * motorRpm / 60000 / 100 # steps * rev/min * 60000ms / min 
+        self.stepTime = motorSteps * motorRpm / 60000.0 / 100.0 # steps * rev/min * 60000ms / min 
         
         self.lastStep_seq = 4
     

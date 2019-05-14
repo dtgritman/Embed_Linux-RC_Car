@@ -1,9 +1,14 @@
 ## Setup 
 
-Each part of the project is modularised for efficiency and fault prevention. This means each part (the nerf_module object_detection and rc_car) can work as a standalone part. 
+Each part of the project is modularised for efficiency and fault prevention. This means each part (the nerf_module object_detection and rc_car) can work as a standalone part.  
 
 ### Raspberry Pi - Setup
 
+##### Webserver dependencies  
+The webserver requires flask to run if not already installed. To install flask you can use the command  
+`~$ sudo apt-get install python-flask`
+
+#### Hotspot Setup
 We wanted to not be reliant on a router to connect to our Pi so we turned it into a hotspot to connect to it without our home or school wifi.
 
 ##### Access point in a standalone network (NAT)

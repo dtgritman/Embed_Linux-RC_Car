@@ -21,11 +21,10 @@ def tank(tank):
     
     #setup variables to track controller
     cannonState = False
+    curL1Trig = 0
     curR1Trig = 0
-    curLJsX = 127
-    curLJsY = 127
-    curRJsX = 127
-    curRJsY = 127
+    curLJs = { "x": 127, "y": 127 }
+    curRJs = { "x": 127, "y": 127 }
     
     # activate cannon
     cannon.activate()
@@ -52,32 +51,54 @@ def tank(tank):
                         cannonState = not cannonState
                         tank.fireCannon(cannonState)
                 
+                elif event.code == TRIG.l1:
+                    curL1Trig = event.value
                 elif event.code == TRIG.r1:
                     curR1Trig = event.value
             
             elif event.type == ecodes.EV_ABS:
                 #Range is 0 to 255, Center values are about 127 (up/left: below 127, down/right: above 127)
-                if event.code == JS.right_x:
-                    curRJsX = event.value
+                if event.code == JS.left_x:
+                    curLJs["x"] = event.value
+                elif event.code == JS.left_y:
+                    curLJs["y"] = event.value
+                
+                elif event.code == JS.right_x:
+                    curRJs["x"] = event.value
                 elif event.code == JS.right_y:
-                    curRJsY = event.value
+                    curRJs["y"] = event.value
+            
+            drivePos = 0
+            if curL1Trig and not curR1Trig:
+                drivePos = -1
+            elif curR1Trig and not curL1Trig:
+                drivePos = 1
+            
+            steerPos = 0
+            if curLJs.get("x") < 121:
+                # TODO: Edit this for proper steering control
+                steerPos = -(122 - curLJs.get("x"))
+            elif curLJs.get("x") > 131:
+                # TODO: Edit this for proper steering control
+                steerPos = curLJs.get("x") - 133
             
             servoPos = 0
-            if curRJsX < 121:
-                servoPos = (-45 / 122) * (122 - curRJsX)
-            elif curRJsX > 133:
-               servoPos = (45 / 122) * (curRJsX - 133)
+            if curRJs.get("x") < 121:
+                servoPos = (-45 / 122) * (122 - curRJs.get("x"))
+            elif curRJs.get("x") > 133:
+               servoPos = (45 / 122) * (curRJs.get("x") - 133)
             
             stepperPos = 0
-            if curRJsY < 121:
-                stepperPos = (90 / 122) * (122 - curRJsY)
-            elif curRJsY > 131:
-                stepperPos = (-90 / 122) * (curRJsY - 133)
+            if curRJs.get("y") < 121:
+                stepperPos = (90 / 122) * (122 - curRJs.get("y"))
+            elif curRJs.get("y") > 131:
+                stepperPos = (-90 / 122) * (curRJs.get("y") - 133)
             
             
+            # TODO: Add car drive and steering controls
             tank.setBaseRotation(int(servoPos))
             tank.setCannonAngle(int(stepperPos))
-            print("CannonState: {}, ServoPos: {}, StepperPos: {}".format(cannonState, int(servoPos), int(stepperPos)))
+            print("CannonState: {}, ServoPos: {}, StepperPos: {}, DrivePos: {}, SteerPos: {}".format(cannonState, int(servoPos), int(stepperPos), drivePos, steerPos))
         
     except OSError:
         print("{} - Controller Disconnected!".format(time.strftime("%H:%M:%S")))

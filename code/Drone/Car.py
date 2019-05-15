@@ -51,30 +51,32 @@ class Car:
         self.pi.set_PWM_dutycycle(self.steerPWM, 0)
     
     # set drive motor
-    def setDrive(self, direction, dutycycle=255):
+    def setDrive(self, direction, dutycycle=100):
+        dc = int((255.0 / 100.0) * dutycycle)
         if direction == 1:
             self.pi.write(self.driveIN1, 1)
             self.pi.write(self.driveIN2, 0)
-            self.pi.set_PWM_dutycycle(self.drivePWM, dutycycle)
+            self.pi.set_PWM_dutycycle(self.drivePWM, dc)
         elif direction == -1:
             self.pi.write(self.driveIN1, 0)
             self.pi.write(self.driveIN2, 1)
-            self.pi.set_PWM_dutycycle(self.drivePWM, dutycycle)
+            self.pi.set_PWM_dutycycle(self.drivePWM, dc)
         else:
             self.pi.write(self.driveIN1, 0)
             self.pi.write(self.driveIN2, 0)
             self.pi.set_PWM_dutycycle(self.drivePWM, 0)
     
     # set steering motor
-    def setSteering(self, direction, dutycycle=255):
+    def setSteering(self, direction, dutycycle=100):
+        dc = int((255.0 / 100.0) * dutycycle)
         if direction == 1:
             self.pi.write(self.steerIN1, 0)
             self.pi.write(self.steerIN2, 1)
-            self.pi.set_PWM_dutycycle(self.steerPWM, dutycycle)
+            self.pi.set_PWM_dutycycle(self.steerPWM, dc)
         elif direction == -1:
             self.pi.write(self.steerIN1, 1)
             self.pi.write(self.steerIN2, 0)
-            self.pi.set_PWM_dutycycle(self.steerPWM, dutycycle)
+            self.pi.set_PWM_dutycycle(self.steerPWM, dc)
         else:
             self.pi.write(self.steerIN1, 0)
             self.pi.write(self.steerIN2, 0)

@@ -22,8 +22,9 @@ def tank(tank):
     
     #setup variables to track controller
     cannonState = False
-    curL1Trig = 0
     curR1Trig = 0
+    curL2Trig = 0
+    curR2Trig = 0
     curLJs = { "x": 127, "y": 127 }
     curRJs = { "x": 127, "y": 127 }
     
@@ -49,36 +50,46 @@ def tank(tank):
                         cannon.deactivate()
                         car.deactivate()
                         continue
-                elif event.code == TRIG.l1:
-                    curL1Trig = event.value
                 elif event.code == TRIG.r1:
                     if event.value == 1:
                         cannonState = not cannonState
                         tank.fireCannon(cannonState)
             
             elif event.type == ecodes.EV_ABS:
+                #Range is 0 to 255
+                if event.code == TRIG.hold_l2:
+                    curL2Trig = event.value
+                elif event.code == TRIG.hold_r2:
+                    curR2Trig = event.value
+                
                 #Range is 0 to 255, Center values are about 127 (up/left: below 127, down/right: above 127)
-                if event.code == JS.left_x:
+                elif event.code == JS.left_x:
                     curLJs["x"] = event.value
                 elif event.code == JS.left_y:
                     curLJs["y"] = event.value
-                
+                #Range is 0 to 255, Center values are about 127 (up/left: below 127, down/right: above 127)
                 elif event.code == JS.right_x:
                     curRJs["x"] = event.value
                 elif event.code == JS.right_y:
                     curRJs["y"] = event.value
             
-            steerPos = 0
-            if curLJs.get("x") > 174:
-                steerPos = 1
-            elif curLJs.get("x") < 80:
-                steerPos = -1
-                
-            drivePos = 0
-            if curLJs.get("y") < 80:
-                drivePos = 1
-            elif curLJs.get("y") > 174:
-                drivePos = -1
+            steerDir = 0
+            steerPerc = 0
+            if curLJs.get("x") < 121:
+                steerDir = -1
+                steerPerc = ((122 - curLJs.get("x")) / 122) * 100
+            elif curLJs.get("x") > 133:
+                steerDir = 1
+                steerPerc = ((curLJs.get("x") - 133) / 122) * 100
+            
+            driveDir = 0
+            drivePerc = 0
+            if curR2Trig - curL2Trig > 0:
+                driveDir = 1
+                drivePerc = ((curR2Trig - curL2Trig) / 255) * 100
+            elif curL2Trig - curR2Trig > 0:
+                driveDir = -1
+                drivePerc = ((curL2Trig - curR2Trig) / 255) * 100
             
             basePos = 0
             if curRJs.get("x") < 121:
@@ -89,14 +100,14 @@ def tank(tank):
             stepperPos = 0
             if curRJs.get("y") < 121:
                 stepperPos = (90 / 122) * (122 - curRJs.get("y"))
-            elif curRJs.get("y") > 131:
+            elif curRJs.get("y") > 133:
                 stepperPos = (-90 / 122) * (curRJs.get("y") - 133)
             
-            car.setSteering(steerPos)
-            car.setDrive(drivePos)
+            car.setSteering(steerDir, int(steerPerc))
+            car.setDrive(driveDir, int(drivePerc))
             tank.setBaseRotation(int(basePos))
             tank.setCannonAngle(int(stepperPos))
-            print("CannonState: {}, BasePos: {}, StepperPos: {}, DrivePos: {}, SteerPos: {}".format(cannonState, int(basePos), int(stepperPos), drivePos, steerPos))
+            print("Cannon: {}, Base: {}, Stepper: {}, Drive: {}|{}%, Steer: {}|{}%".format(cannonState, int(basePos), int(stepperPos), driveDir, int(drivePerc), steerDir, int(steerPerc)))
         
     except OSError:
         print("{} - Controller Disconnected!".format(time.strftime("%H:%M:%S")))

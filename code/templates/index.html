@@ -3,6 +3,7 @@
 
 <head>
   <title>HvZ Tank</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <style>
     .disable-select {
@@ -21,19 +22,32 @@
     
     td { border: 1px solid black; }
     
-    button { display: block; margin-left: auto; margin-right: auto; }
+    #options #modeBtn_manual { display: none; }
     
-    #controls { display: inline-block; }
+    #options button {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 10px;
+    }
     
-    #options {
-      float: left;
-      width: 100%;
+    #controls {
+      display: inline-block;
+      vertical-align: top;
+      width: 45%;
     }
     
     #camera_feed {
-      width: 640px;
-      height: 480px;
       display: inline-block;
+      width: 45%;
+      min-width: 640px;
+    }
+    
+    .control_box {
+      display: inline-block;
+      width: 350px;
+      height: 350px;
+      border: 1px solid black;
     }
     
     #drive_ball {
@@ -57,15 +71,6 @@
       border-radius: 100%;
       box-shadow: inset 0 0 10px #000;
     }
-    
-    #modeBtn_manual { display: none; }
-    
-    .control_box {
-      float: left;
-      width: 300px;
-      height: 300px;
-      border: 1px solid black;
-    }
   </style>
 </head>
 
@@ -83,9 +88,9 @@
     
     <div id="options">
       <h3>Options</h3>
-      <button id="toggleCannonBtn" onclick="toggleCannonState()">Toggle Cannon</button><br>
-      <button id="controlsBtn_reset" onclick="resetManualMode()">Reset Controls</button><br>
-      <button id="toggleTankActiveBtn" onclick="toggleTankActive()">Toggle Tank Active</button><br>
+      <button id="toggleCannonBtn" onclick="toggleCannonState()">Toggle Cannon</button>
+      <button id="controlsBtn_reset" onclick="resetManualMode()">Reset Controls</button>
+      <button id="toggleTankActiveBtn" onclick="toggleTankActive()">Toggle Tank Active</button>
       <button id="modeBtn_manual" onclick="changeMode('manual')">Activate Manual Mode</button>
       <button id="modeBtn_auto" onclick="changeMode('auto')">Activate Automatic Mode</button>
     </div>
@@ -93,7 +98,6 @@
   
   <div id="camera_feed" class="disable-select">
     <h3>Camera Feed</h3>
-    <!-- {{ url_for('video_feed') }} -->
     <img src="{{ url_for('video_feed') }}" alt="Yeah, this is supposed to be a camera stream.">
   </div>
   

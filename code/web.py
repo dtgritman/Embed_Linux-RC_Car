@@ -165,9 +165,11 @@ def runAutoDetection():
         for (x,y,w,h) in shirts:
             # rectangle is half the height of body detected
             cv2.rectangle(frame, (x, y),(x + w, y + int(h / 2)), (255, 255, 0), 2)
-            print("test")
+            
+            # don't log or control the cannon when in auto mode
             if not autoActive:
                 continue
+            
             center_x = int(x) + (int(w) / 2)
             center_y = int(y) + (int(h) / 2)
             #print("Coordinates of center are x:" + str((int(x) + int(w)/2)) + " y: " + str((int(y) + int(h)/2)))

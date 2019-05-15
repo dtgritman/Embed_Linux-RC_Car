@@ -92,8 +92,8 @@ def tank(tank):
             elif curRJs.get("y") > 131:
                 stepperPos = (-90 / 122) * (curRJs.get("y") - 133)
             
-            
-            # TODO: Add car drive and steering controls
+            car.setSteering(steerPos)
+            car.setDrive(drivePos)
             tank.setBaseRotation(int(basePos))
             tank.setCannonAngle(int(stepperPos))
             print("CannonState: {}, BasePos: {}, StepperPos: {}, DrivePos: {}, SteerPos: {}".format(cannonState, int(basePos), int(stepperPos), drivePos, steerPos))

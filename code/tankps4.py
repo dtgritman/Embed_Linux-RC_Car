@@ -1,6 +1,7 @@
 from evdev import InputDevice, ecodes
 from ps4controllercodes import *
 from Drone.Cannon import TankCannon, StepperMotor
+from Drone.Car import Car
 import time
 import os
 
@@ -68,15 +69,15 @@ def tank(tank):
                     curRJs["y"] = event.value
             
             steerPos = 0
-            if curLJs.get("x") > 160:
+            if curLJs.get("x") > 174:
                 steerPos = 1
-            elif curLJs.get("x") < 90:
+            elif curLJs.get("x") < 80:
                 steerPos = -1
                 
             drivePos = 0
-            if curLJs.get("y") > 160:
+            if curLJs.get("y") < 80:
                 drivePos = 1
-            elif curLJs.get("y") < 90:
+            elif curLJs.get("y") > 174:
                 drivePos = -1
             
             basePos = 0

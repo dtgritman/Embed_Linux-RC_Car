@@ -17,7 +17,7 @@ function drag(e) {
     // Set current Y coordinate minus distance top from offsetParent node.
     prev_y = y - obj.offsetTop;
     // Change the object's color so it looks like it's usable/moveable.
-    obj.style.background = '#00ff00';
+    obj.style.background = '#ff0000';
 }
 
 function move(e) {
@@ -55,10 +55,8 @@ function move(e) {
         }
         
         if (tankActive) {
-            if (obj.id == "drive_ball") {
-                // TODO: Setup webpage call for steering/drive
+            if (obj.id == "drive_ball")
                 updateCar();
-            }
             else if (obj.id == "cannon_ball")
                 updateCannonPos();
         }
@@ -70,7 +68,7 @@ function move(e) {
 function drop() {
     if (obj) {
         if (obj.id == "drive_ball") {
-            // set ball back to the center of the box
+            // set ball back to the center of the box when released
             centerBall("drive_box", "drive_ball");
             updateCar();
         }
@@ -148,9 +146,11 @@ function updateCannonPos() {
     var box =  document.getElementById("cannon_box");
     var cannonPos = { "cannonAngle": 0, "cannonBaseAngle": 0, "cannonState": cannonState };
     relX = ball.offsetLeft - box.offsetLeft + (ball.offsetWidth / 2) - (box.offsetWidth / 2);
-    cannonPos["cannonBaseAngle"] = Math.round(relX * (90 / (box.offsetWidth - (ball.offsetWidth / 2))));
+    cannonPos["cannonBaseAngle"] = Math.round(relX * (90 / (box.offsetWidth - ball.offsetWidth)));
+    
     relY = -(ball.offsetTop - box.offsetTop + (ball.offsetHeight / 2) - (box.offsetHeight / 2));
-    cannonPos["cannonAngle"] = Math.round(relY * (180 / (box.offsetHeight - (ball.offsetHeight / 2))));
+    cannonPos["cannonAngle"] = Math.round(relY * (180 / (box.offsetHeight - ball.offsetHeight)));
+    console.log(cannonPos);
     $.post('/cannoncontrol', cannonPos);
 }
 

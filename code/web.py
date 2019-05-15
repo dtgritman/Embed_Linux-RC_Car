@@ -5,15 +5,16 @@ import json
 from Drone.Cannon import TankCannon, StepperMotor
 from Drone.Car import Car
 from threading import Thread
-from imutils.video.pivideostream import PiVideoStream
 import io
 import time
 import cv2
 import picamera
 import picamera.array
 import numpy as np
+from imutils.video.pivideostream import PiVideoStream
 import imutils
 import os
+
 
 autoActive = 0
 tankActive = 1
@@ -26,19 +27,25 @@ stepperBIN1 = 19
 stepperBIN2 = 26
 cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), 3)
 
-carAIN2 = 11 # (GPIO #17)
-carAIN1 = 12 # (GPIO #18)
-carPWMA = 7 # (GPIO #4)
-carBIN1 = 15 # (GPIO #22)
-carBIN2 = 16 # (GPIO #23)
-carPWMB = 18 # (GPIO #24)
-carSTBY = 13 # (GPIO #21)
+
+carSTBY = 27
+carPWMA = 4
+carAIN2 = 17
+carAIN1 = 18
+carBIN1 = 22
+carBIN2 = 23
+carPWMB = 24
 car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
+    global autoActive, tankActive
+    autoActive = 0
+    tankActive = 1
+    cannon.activate()
+    car.activate()
     return render_template('index.html')
 
 '''
@@ -53,6 +60,7 @@ def gen():
 def video_feed():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 '''
+
 @app.route('/detectionlogs')
 def detectionLogJSON():
     try:
@@ -67,7 +75,7 @@ def detectionLogJSON():
         
         # output array as JSON for the client to use
         return json.dumps(detectionLogArray)
-
+    
     except sqlite.Error as e:
         print("Error %s:" % e.args[0])
         return
@@ -78,9 +86,10 @@ def tankActive():
     tankActive = int(request.form['tankActive'])
     if tankActive:
         cannon.activate()
+        car.activate()
     else:
         cannon.deactivate()
-        car.reset()
+        car.deactivate()
     
     return ""
 
@@ -96,12 +105,15 @@ def carControl():
     global tankActive, autoActive
     if not tankActive:
         return ""
-    steering = int(request.form['steering'])
+    
+    steeringDir = int(request.form['steering'])
     # -1 = left, 0 = off, 1 = right
-    car.changeSteering(steering)
-    drive = int(request.form['drive'])
+    car.setSteering(steeringDir)
+    
+    driveDir = int(request.form['drive'])
     # -1 = reverse, 0 = off, 1 = forward
-    car.changeDrive(drive)
+    car.setDrive(driveDir)
+    
     return ""
 
 @app.route('/cannoncontrol', methods=['POST'])
@@ -109,12 +121,16 @@ def cannonControl():
     global tankActive, autoActive
     if not tankActive or autoActive:
         return ""
+    
     canState = int(request.form['cannonState'])
     cannon.fireCannon(canState)
+    
     baseAngle = int(request.form['cannonBaseAngle'])
     cannon.setBaseRotation(baseAngle)
+    
     canAngle = int(request.form['cannonAngle'])
     cannon.setCannonAngle(canAngle)
+    
     return ""
 
 def runAutoDetection():
@@ -167,6 +183,7 @@ def runAutoDetection():
         # write frames individually to stream.jpeg (definitely can be done better but can't do tests right now)
         #cv2.imwrite('static/stream.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
         # maybe making frame a global will do the trick and we can remove this? just maybe
+    vs.stop()
 
 if __name__ == '__main__':
     try:
@@ -176,7 +193,8 @@ if __name__ == '__main__':
         app.run(host='0.0.0.0', port=8080)
     except KeyboardInterrupt:
         t1.stop()
-        vs.stop()
+        #vs.stop()
         pass
 
 cannon.stop()
+car.stop()

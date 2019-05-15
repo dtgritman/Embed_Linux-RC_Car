@@ -1,71 +1,83 @@
-import time 
-import RPi.GPIO as GPIO
+import pigpio
 
 class Car:
-
     def __init__(self, STBY, PWMA, AIN2, AIN1, BIN1, BIN2, PWMB):
-        GPIO.setmode(GPIO.BOARD)
-
+        self.pi = pigpio.pi()
+        if not self.pi.connected:
+            print("Pi not connected to pigpio.")
+            return
+        
+        # GPIO Pin locations
         self.STBY = STBY
-        # Drive motor
-        self.PWMA = PWMA
-        self.AIN1 = AIN1
-        self.AIN2 = AIN2
-        # Left-Right controller
-        self.PWMB = PWMB
-        self.BIN1 = BIN1
-        self.BIN2 = BIN2
-
-        GPIO.setup(PWMA, GPIO.OUT)  # Connected to PWMA 
-        GPIO.setup(AIN2, GPIO.OUT)  # Connected to AIN2
-        GPIO.setup(AIN1, GPIO.OUT)  # Connected to AIN1 
-
-        GPIO.setup(STBY, GPIO.OUT)  # Connected to STBY 
-
-        GPIO.setup(BIN1, GPIO.OUT)  # Connected to BIN1 
-        GPIO.setup(BIN2, GPIO.OUT)  # Connected to BIN2 
-        GPIO.setup(PWMB, GPIO.OUT)  # Connected to PWMB
+        # drive motor
+        self.drivePWM = PWMA
+        self.driveIN1 = AIN1
+        self.driveIN2 = AIN2
+        # steering motor
+        self.steerPWM = PWMB
+        self.steerIN1 = BIN1
+        self.steerIN2 = BIN2
+        
+        # initialize GPIO
+        self.pi.set_mode(STBY, pigpio.OUTPUT)
+        self.pi.set_mode(PWMA, pigpio.OUTPUT)
+        self.pi.set_mode(AIN1, pigpio.OUTPUT)
+        self.pi.set_mode(AIN2, pigpio.OUTPUT)
+        self.pi.set_mode(PWMB, pigpio.OUTPUT)
+        self.pi.set_mode(BIN1, pigpio.OUTPUT)
+        self.pi.set_mode(BIN2, pigpio.OUTPUT)
+        
+        # setup car
+        self.activate()
     
-    def changeDrive(self, direction):
-        GPIO.output(self.STBY, GPIO.HIGH)
+    # activate motors
+    def activate(self): 
+        self.deactivate()
+        self.pi.write(self.STBY, 1)
+    
+    # shut off motors
+    def deactivate(self):
+        self.pi.write(self.STBY, 0)
+        # shut off drive motor
+        self.pi.write(self.driveIN1, 0)
+        self.pi.write(self.driveIN2, 0)
+        self.pi.write(self.drivePWM, 0)
+        # shut off steering motor
+        self.pi.write(self.steerIN1, 0)
+        self.pi.write(self.steerIN2, 0)
+        self.pi.write(self.steerPWM, 0)
+    
+    # set drive motor
+    def setDrive(self, direction):
         if direction == 1:
-            GPIO.output(self.AIN1, GPIO.HIGH)
-            GPIO.output(self.AIN2, GPIO.LOW)
-            GPIO.output(self.PWMA, GPIO.HIGH)
+            self.pi.write(self.driveIN1, 1)
+            self.pi.write(self.driveIN2, 0)
+            self.pi.write(self.drivePWM, 1)
         elif direction == -1:
-            GPIO.output(self.AIN1, GPIO.LOW)
-            GPIO.output(self.AIN2, GPIO.HIGH)
-            GPIO.output(self.PWMA, GPIO.HIGH)
+            self.pi.write(self.driveIN1, 0)
+            self.pi.write(self.driveIN2, 1)
+            self.pi.write(self.drivePWM, 1)
         else:
-            GPIO.output(self.STBY, GPIO.LOW)
-            GPIO.output(self.AIN1, GPIO.LOW)
-            GPIO.output(self.AIN2, GPIO.LOW)
-            GPIO.output(self.PWMA, GPIO.LOW)
+            self.pi.write(self.driveIN1, 0)
+            self.pi.write(self.driveIN2, 0)
+            self.pi.write(self.drivePWM, 0)
     
-    def changeSteering(self, direction):
-        print(direction)
-        GPIO.output(self.STBY, GPIO.HIGH)
-        if direction == -1:
-            GPIO.output(self.BIN1, GPIO.HIGH)
-            GPIO.output(self.BIN2, GPIO.LOW)
-            GPIO.output(self.PWMB, GPIO.HIGH)
-        elif direction == 1:
-            GPIO.output(self.BIN1, GPIO.LOW)
-            GPIO.output(self.BIN2, GPIO.HIGH)
-            GPIO.output(self.PWMB, GPIO.HIGH)
+    # set steering motor
+    def setSteering(self, direction):
+        if direction == 1:
+            self.pi.write(self.steerIN1, 0)
+            self.pi.write(self.steerIN2, 1)
+            self.pi.write(self.steerPWM, 1)
+        elif direction == -1:
+            self.pi.write(self.steerIN1, 1)
+            self.pi.write(self.steerIN2, 0)
+            self.pi.write(self.steerPWM, 1)
         else:
-            GPIO.output(self.STBY, GPIO.LOW)
-            GPIO.output(self.BIN1, GPIO.LOW)
-            GPIO.output(self.BIN2, GPIO.LOW)
-            GPIO.output(self.PWMB, GPIO.LOW)
+            self.pi.write(self.steerIN1, 0)
+            self.pi.write(self.steerIN2, 0)
+            self.pi.write(self.steerPWM, 0)
     
-    def reset(self):
-        GPIO.output(self.STBY, GPIO.LOW)
-
-        GPIO.output(self.speed_drive, GPIO.LOW)
-        GPIO.output(self.AIN1, GPIO.LOW)
-        GPIO.output(self.AIN2, GPIO.LOW)
-
-        GPIO.output(self.LR_ON, GPIO.LOW)
-        GPIO.output(self.BIN1, GPIO.LOW)
-        GPIO.output(self.BIN2, GPIO.LOW)
+    # shut everything off and disconnect from pi
+    def stop(self):
+        self.deactivate()
+        self.pi.stop()

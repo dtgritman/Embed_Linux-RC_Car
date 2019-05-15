@@ -27,6 +27,9 @@ class Car:
         self.pi.set_mode(BIN1, pigpio.OUTPUT)
         self.pi.set_mode(BIN2, pigpio.OUTPUT)
         
+        self.pi.set_PWM_frequency(PWMA, 50)
+        self.pi.set_PWM_frequency(PWMB, 50)
+        
         # setup car
         self.activate()
     
@@ -41,41 +44,41 @@ class Car:
         # shut off drive motor
         self.pi.write(self.driveIN1, 0)
         self.pi.write(self.driveIN2, 0)
-        self.pi.write(self.drivePWM, 0)
+        self.pi.set_PWM_dutycycle(self.drivePWM, 0)
         # shut off steering motor
         self.pi.write(self.steerIN1, 0)
         self.pi.write(self.steerIN2, 0)
-        self.pi.write(self.steerPWM, 0)
+        self.pi.set_PWM_dutycycle(self.steerPWM, 0)
     
     # set drive motor
-    def setDrive(self, direction):
+    def setDrive(self, direction, dutycycle=255):
         if direction == 1:
             self.pi.write(self.driveIN1, 1)
             self.pi.write(self.driveIN2, 0)
-            self.pi.write(self.drivePWM, 1)
+            self.pi.set_PWM_dutycycle(self.drivePWM, dutycycle)
         elif direction == -1:
             self.pi.write(self.driveIN1, 0)
             self.pi.write(self.driveIN2, 1)
-            self.pi.write(self.drivePWM, 1)
+            self.pi.set_PWM_dutycycle(self.drivePWM, dutycycle)
         else:
             self.pi.write(self.driveIN1, 0)
             self.pi.write(self.driveIN2, 0)
-            self.pi.write(self.drivePWM, 0)
+            self.pi.set_PWM_dutycycle(self.drivePWM, 0)
     
     # set steering motor
-    def setSteering(self, direction):
+    def setSteering(self, direction, dutycycle=255):
         if direction == 1:
             self.pi.write(self.steerIN1, 0)
             self.pi.write(self.steerIN2, 1)
-            self.pi.write(self.steerPWM, 1)
+            self.pi.set_PWM_dutycycle(self.steerPWM, dutycycle)
         elif direction == -1:
             self.pi.write(self.steerIN1, 1)
             self.pi.write(self.steerIN2, 0)
-            self.pi.write(self.steerPWM, 1)
+            self.pi.set_PWM_dutycycle(self.steerPWM, dutycycle)
         else:
             self.pi.write(self.steerIN1, 0)
             self.pi.write(self.steerIN2, 0)
-            self.pi.write(self.steerPWM, 0)
+            self.pi.set_PWM_dutycycle(self.steerPWM, 0)
     
     # shut everything off and disconnect from pi
     def stop(self):

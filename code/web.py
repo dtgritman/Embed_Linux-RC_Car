@@ -20,6 +20,7 @@ tankActive = 1
 autoActive = 0
 streamFrame = None
 
+# cannon gpio pins and intialization
 pinCannon = 20
 pinServo = 21
 stepperAIN2 = 5
@@ -28,7 +29,7 @@ stepperBIN1 = 19
 stepperBIN2 = 26
 cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), 3)
 
-
+# car gpio pins and intialization
 carSTBY = 27
 carPWMA = 4
 carAIN2 = 17
@@ -110,13 +111,29 @@ def carControl():
     if not tankActive:
         return ""
     
-    steeringDir = int(request.form['steering'])
     # -1 = left, 0 = off, 1 = right
-    car.setSteering(steeringDir)
+    steerDir = 0
+    # steering motor speed percent
+    steerPerc = int(request.form['steering'])
+    if steerPerc > 0:
+        steerDir = 1
+    elif steerPerc < 0:
+        steerDir = -1
+        steerPerc = -steerPerc
     
-    driveDir = int(request.form['drive'])
+    car.setSteering(steeringDir, steerPerc)
+    
     # -1 = reverse, 0 = off, 1 = forward
-    car.setDrive(driveDir)
+    driveDir = 0
+    # drive motor speed percent
+    drivePerc = int(request.form['drive'])
+    if drivePerc > 0:
+        driveDir = 1
+    elif drivePerc < 0:
+        driveDir = -1
+        drivePerc = -drivePerc
+    
+    car.setDrive(driveDir, drivePerc)
     
     return ""
 
@@ -157,12 +174,12 @@ def runAutoDetection():
             continue
         # captures frames individually from camera
         frame = vs.read()
-        #frame = imutils.resize(frame, width=240)
+        frame = imutils.resize(frame, width=240)
         # convert to grayscale for cascade detection
         gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
         shirts = shirt_cascade.detectMultiScale(gray, 1.02, 5)
         # draws rectangle around any objects detected
-        for (x,y,w,h) in shirts:
+        for (x, y, w, h) in shirts:
             # rectangle is half the height of body detected
             cv2.rectangle(frame, (x, y),(x + w, y + int(h / 2)), (255, 255, 0), 2)
             
@@ -177,19 +194,19 @@ def runAutoDetection():
             if (center_x - center_prevX) > 20 or (center_prevX - center_x) > 20 \
                 or (center_y - center_prevY) > 20 or (center_prevY - center_y) > 20:
                 # checks if filename exists already, if not then writes file appending number that does not exist yet
-                while os.path.exists('static/img/image%s.jpeg' % pic_number):
-                    cv2.imwrite('static/img/image%s.jpeg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                while os.path.exists('static/img/image%s.jpg' % pic_number):
+                    cv2.imwrite('static/img/image%s.jpg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
                     # write timestamp, detection type, and image to SQLite db
                     current_time = time.strftime("%Y-%m-%d %H:%M:%S") 
                     detection_type = "unknown"
-                    image_name = ("image%s.jpeg" % pic_number)
+                    image_name = ("image%s.jpg" % pic_number)
                     cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES(?,?,?);', (current_time, detection_type, image_name))
                     con.commit()
                     pic_number += 1
             cannon.setCannonPos(center_x, center_y)
             cannon.fireCannon(1)
         # resize frame to 480p
-        frame = cv2.resize(frame,(640,480))
+        frame = cv2.resize(frame, (640, 480))
         ret, streamFrame = cv2.imencode('.jpg', frame)
         streamFrame = streamFrame.tobytes()
         

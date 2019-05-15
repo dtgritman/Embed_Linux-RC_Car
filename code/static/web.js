@@ -31,28 +31,22 @@ function move(e) {
     if (obj) {
         var box, newX, newY, relX, relY;
     
-        if (obj.id == "drive_ball") {
+        if (obj.id == "drive_ball")
             box = document.getElementById("drive_box");
-        }
-        else if (obj.id == "cannon_ball") {
+        else if (obj.id == "cannon_ball")
             box = document.getElementById("cannon_box");
-        }
         
         newX = x - prev_x;
-        if (newX < box.offsetLeft) {
+        if (newX < box.offsetLeft)
             newX = box.offsetLeft;
-        }
-        else if (newX > box.offsetLeft + box.offsetWidth - obj.offsetWidth) {
+        else if (newX > box.offsetLeft + box.offsetWidth - obj.offsetWidth)
             newX = box.offsetLeft + box.offsetWidth - obj.offsetWidth;
-        }
         
         newY = y - prev_y;
-        if (newY < box.offsetTop) {
+        if (newY < box.offsetTop)
             newY = box.offsetTop;
-        }
-        else if (newY > box.offsetTop + box.offsetHeight - obj.offsetHeight) {
+        else if (newY > box.offsetTop + box.offsetHeight - obj.offsetHeight)
             newY = box.offsetTop + box.offsetHeight - obj.offsetHeight;
-        }
         
         if (tankActive) {
             if (obj.id == "drive_ball")
@@ -117,6 +111,7 @@ function changeMode(mode) {
         document.getElementById("modeBtn_manual").style.display = "block";
         document.getElementById("modeBtn_auto").style.display = "none";
     }
+    
     $.post('/autoactive', { "autoActive": autoActive });
 }
 
@@ -145,12 +140,13 @@ function updateCannonPos() {
     var ball = document.getElementById("cannon_ball");
     var box =  document.getElementById("cannon_box");
     var cannonPos = { "cannonAngle": 0, "cannonBaseAngle": 0, "cannonState": cannonState };
+    
     relX = ball.offsetLeft - box.offsetLeft + (ball.offsetWidth / 2) - (box.offsetWidth / 2);
     cannonPos["cannonBaseAngle"] = Math.round(relX * (90 / (box.offsetWidth - ball.offsetWidth)));
     
     relY = -(ball.offsetTop - box.offsetTop + (ball.offsetHeight / 2) - (box.offsetHeight / 2));
     cannonPos["cannonAngle"] = Math.round(relY * (180 / (box.offsetHeight - ball.offsetHeight)));
-    console.log(cannonPos);
+    
     $.post('/cannoncontrol', cannonPos);
 }
 
@@ -159,17 +155,14 @@ function updateCar() {
     var ball = document.getElementById("drive_ball");
     var box =  document.getElementById("drive_box");
     var carPos = { "steering": 0, "drive": 0 };
+    
     relX = ball.offsetLeft - box.offsetLeft + (ball.offsetWidth / 2) - (box.offsetWidth / 2);
-    if (relX > 30)
-        carPos["steering"] = 1;
-    else if (relX < -30)
-        carPos["steering"] = -1;
+    if (relX > 20 || relX < -20)
+        carPos["steering"] = Math.round(relX * (200 / (box.offsetWidth - ball.offsetWidth)));
     
     relY = -(ball.offsetTop - box.offsetTop + (ball.offsetHeight / 2) - (box.offsetHeight / 2));
-    if (relY > 30)
-        carPos["drive"] = 1;
-    else if (relY < -30)
-        carPos["drive"] = -1;
+    if (relY > 20 || relY < -20)
+        carPos["drive"] = Math.round(relY * (200 / (box.offsetHeight - ball.offsetHeight)));
     
     $.post('/carcontrol', carPos);
 }

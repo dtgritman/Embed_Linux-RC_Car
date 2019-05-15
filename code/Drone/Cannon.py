@@ -69,14 +69,14 @@ class TankCannon:
             xDegrees = -(midX - x) * (90.0 / width)
         else:
             xDegrees = (x - midX) * (90.0 / width)
-        setBaseRotation(xDegrees)
+        self.setBaseRotation(xDegrees)
         
         midY = height / 2
         if y < midY:
             yDegrees = -(midY - y) * (180.0 / height)
         else:
             yDegrees = (y - midY) * (180.0 / height)
-        setCannonAngle(yDegrees)
+        self.setCannonAngle(yDegrees)
     
     # set the vertical angle of the cannon
     def setCannonAngle(self, degrees):

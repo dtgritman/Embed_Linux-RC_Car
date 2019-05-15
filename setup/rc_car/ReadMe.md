@@ -7,10 +7,10 @@
 3. Resoldering the on/off switch 
 
 
-### Wireing 
+### Wiring 
 
 
-    STBY = Pin 13 (GPIO #21)    = Stand By
+    STBY = Pin 13 (GPIO #27)    = Stand By
 
     Drive motor:
     PWMA = Pin 7  (GPIO #4)      = Speed

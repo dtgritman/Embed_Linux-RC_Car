@@ -4,9 +4,24 @@ Each part of the project is modularised for efficiency and fault prevention. Thi
 
 ### Raspberry Pi - Setup
 
-##### Webserver dependencies  
-The webserver requires flask to run if not already installed. To install flask you can use the command  
-`~$ sudo apt-get install python-flask`
+##### Required Dependencies  
+The webserver uses flask. If it's not already installed the in can be installed with:  
+```
+~$ sudo apt-get install python3-flask
+```  
+The tank control classes use pigpio to control the gpio. This library has better PWM signal control than RPi. To install this library use:  
+```
+~$ sudo apt-get install pigpio python3-pigpio
+```
+This library requires the pigpio daemon to be running. This daemon can be started manually (only needs to be started once each boot) using:
+```
+~$ sudo pigpiod
+```
+or it can be set to run on system boot with:
+```
+~$ sudo systemctl enable pigpiod
+~$ sudo reboot
+```
 
 #### Hotspot Setup
 We wanted to not be reliant on a router to connect to our Pi so we turned it into a hotspot to connect to it without our home or school wifi.
@@ -116,6 +131,13 @@ DAEMON_CONF="/etc/hostapd/hostapd.conf"
 ```bash
 ~$ sudo systemctl start hostapd
 ~$ sudo systemctl start dnsmasq
+```
+
+\*NOTE: if sudo systemctl start hostapd fails to start and is masked you should use these commands to fix the issue:
+```bash
+~$ sudo systemctl unmask hostapd
+~$ sudo systemctl enable hostapd
+~$ sudo systemctl start hostapd
 ```
 
 **Add routing and masquerade**

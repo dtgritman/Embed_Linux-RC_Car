@@ -3,7 +3,7 @@
 
 ### Team
  * **Miguel**: Building a vehicle to hold the project components.
- * **Dustin**: Building a nerf cannon that will angle up and down. 
+ * **Dustin**: Building a nerf cannon that will angle up/down and rotate side to side. 
  * **Faizan**: Creating the object detection mechanism to target objects.
 
 ### Goal

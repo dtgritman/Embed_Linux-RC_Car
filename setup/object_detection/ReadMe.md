@@ -1,6 +1,31 @@
-# Compiling OpenCV 3.4.1 on a Raspberry pi
+# Current OpenCV Install Method
 
-## Step 1: Extend your disk before proceeding
+## OpenCV 3.4.4 was used
+
+### Installation Process
+
+##### Required Dependencies  
+Install picamera and pip3 using apt-get:  
+```
+~$ sudo apt-get install python3-picamera python3-pip
+```
+
+With pip3 installed, use pip3 to install opencv-contrib-python and imutils  
+```
+~$ pip3 install opencv-contrib-python imutils
+```
+
+This opencv installation may look for some libraries that are not installed, to install these commonly missing libraries run this command:
+```
+~$ sudo apt install libhdf5-100 libsz2 libharfbuzz0b libatlas3-base libwebp6 libtiff5 libjasper1 libilmbase12 libopenexr22 libgstreamer1.0-0 libavcodec57 libavformat57 libswscale4 libqtgui4 libqt4-test
+```
+
+
+# Previous OpenCV Install Method
+
+## Compiling OpenCV 3.4.1 on a Raspberry pi
+
+### Step 1: Extend your disk before proceeding
 
     $ sudo raspi-config
 
@@ -10,14 +35,14 @@ Reboot your pi:
 
     $ sudo reboot
 
-## Step 2: Reclaim space by removing LibreOffice and Wolfram Engine
+### Step 2: Reclaim space by removing LibreOffice and Wolfram Engine
 
     $ sudo apt-get purge wolfram-engine
     $ sudo apt-get purge libreoffice*
     $ sudo apt-get clean
     $ sudo apt-get autoremove
 
-## Step 3: Install dependencies
+### Step 3: Install dependencies
 
     $ sudo apt-get update && sudo apt-get upgrade
     $ sudo apt-get install build-essential cmake pkg-config
@@ -34,7 +59,7 @@ Reboot your pi:
     $ sudo python get-pip.py
     $ pip install numpy
 
-## Step 4: Download the OpenCV Source Code
+### Step 4: Download the OpenCV Source Code
 
     $ cd ~
     $ wget -O opencv.zip https://github.com/opencv/opencv/archive/3.4.1.zip
@@ -42,7 +67,7 @@ Reboot your pi:
     $ wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.4.1.zip
     $ unzip opencv_contrib.zip
 
-## Step 5: Increase size of swap file
+### Step 5: Increase size of swap file
 
     $ sudo nano /etc/dphys-swapfile
 
@@ -58,7 +83,7 @@ Restart the swap service
     $ sudo /etc/init.d/dphys-swapfile stop
     $ sudo /etc/init.d/dphys-swapfile start
 
-## Step 6: Compile and install optimized OpenCV
+### Step 6: Compile and install optimized OpenCV
 
     $ cd ~/opencv-3.4.1/
     $ mkdir build
@@ -80,7 +105,7 @@ If you encounter any issues while compiling, run
 
 Remember to restore the swap size back to 100 and restart the swap service
 
-## Step 7: Install the build
+### Step 7: Install the build
 
     $ sudo make install
     $ sudo ldconfig
@@ -104,7 +129,7 @@ add the following lines at the bottom of bash.bashrc
 
 Save and exit (CTRL+X, Y and then ENTER)
 
-## Step 8: Reboot and verify installation
+### Step 8: Reboot and verify installation
 
     $ sudo reboot
     $ python
@@ -114,4 +139,4 @@ The output should be
 
     '3.4.1'
 
-## Done
+### Done

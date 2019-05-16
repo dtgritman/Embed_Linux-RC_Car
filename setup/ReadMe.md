@@ -133,7 +133,7 @@ DAEMON_CONF="/etc/hostapd/hostapd.conf"
 ~$ sudo systemctl start dnsmasq
 ```
 
-\*NOTE: if sudo systemctl start hostapd fails to start and is masked you should use these commands to fix the issue:
+**NOTE:** if sudo systemctl start hostapd fails to start and is masked you should use these commands to fix the issue:
 ```bash
 ~$ sudo systemctl unmask hostapd
 ~$ sudo systemctl enable hostapd

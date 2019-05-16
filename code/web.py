@@ -121,7 +121,7 @@ def carControl():
         steerDir = -1
         steerPerc = -steerPerc
     
-    car.setSteering(steeringDir, steerPerc)
+    car.setSteering(steerDir, steerPerc)
     
     # -1 = reverse, 0 = off, 1 = forward
     driveDir = 0
@@ -156,8 +156,8 @@ def cannonControl():
 
 def runAutoDetection():
     global tankActive, autoActive, streamFrame
-    #tankActive = 1
-    #autoActive = 0
+    tankActive = 1
+    autoActive = 0
     
     shirt_cascade = cv2.CascadeClassifier('object_detection/body.xml')
     #print(cv2.__version__)
@@ -183,7 +183,7 @@ def runAutoDetection():
             # rectangle is half the height of body detected
             cv2.rectangle(frame, (x, y),(x + w, y + int(h / 2)), (255, 255, 0), 2)
             
-            # don't log or control the cannon when in auto mode
+            # don't log or control the cannon when in manual mode
             if not autoActive:
                 continue
             

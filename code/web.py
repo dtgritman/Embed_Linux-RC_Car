@@ -52,9 +52,10 @@ def index():
 
 # get the camera feed output
 def gen():
-    global streamFrame, savedFrame
+    global streamFrame, savedFrame, endStream
+    endStream = False
     savedFrame = open('static/img/loading.jpg', 'rb').read()
-    while True:
+    while not endStream:
         if streamFrame != None:
             savedFrame = streamFrame
             yield (b'--frame\r\n'
@@ -62,7 +63,7 @@ def gen():
         else:
             yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + savedFrame + b'\r\n')
-    
+
 @app.route('/videofeed')
 def video_feed():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -223,14 +224,11 @@ def runAutoDetection():
     vs.stop()
 
 if __name__ == '__main__':
-    try:
-        t1 = Thread(target = runAutoDetection)
-        t1.setDaemon(True)
-        t1.start()
-        app.run(host='0.0.0.0', port=8080, threaded=True)
-    except KeyboardInterrupt:
-        t1.stop()
-        pass
+    t1 = Thread(target = runAutoDetection)
+    t1.setDaemon(True)
+    t1.start()
+    app.run(host='0.0.0.0', port=8080, threaded=True)
+    endStream = True
 
 cannon.stop()
 car.stop()

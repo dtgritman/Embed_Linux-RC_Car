@@ -53,6 +53,8 @@ class TankCannon:
     
     # turn the cannon and motors off
     def deactivate(self):
+        # center the servo motor
+        self.pi.set_servo_pulsewidth(self.rotationServoPin, self.rotationServoMid)
         # set cannon angle to resting postion and deactivate stepper motor
         self.setCannonAngle(-90.0)
         self.angleStepper.deactivate()

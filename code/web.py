@@ -52,7 +52,7 @@ def index():
 
 # get the camera feed output
 def gen():
-    global streamFrame, savedFrame, endStream
+    global streamFrame, endStream
     endStream = False
     savedFrame = open('static/img/loading.jpg', 'rb').read()
     while not endStream:

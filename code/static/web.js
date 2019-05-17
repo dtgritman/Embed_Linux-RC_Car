@@ -2,6 +2,8 @@ window.onload = resetManualMode;
 updateDetectionsTable();
 setInterval(updateDetectionsTable, 15000);
 
+$.ajaxSetup({async: false});
+
 var obj, x, y, prev_x, prev_y, cannonState;
 cannonState = 0;
 tankActive = 1;

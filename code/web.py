@@ -27,7 +27,7 @@ stepperAIN2 = 5
 stepperAIN1 = 6
 stepperBIN1 = 19
 stepperBIN2 = 26
-cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), 3)
+cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), stepper_GearRatio=3, rotationServo_Offset=50)
 
 # car gpio pins and intialization
 carSTBY = 27
@@ -175,8 +175,6 @@ def runAutoDetection():
     center_prevX = 0
     center_prevY = 0
     while True:
-        if not tankActive:
-            continue
         # captures frames individually from camera
         frame = vs.read()
         frame = imutils.resize(frame, width=240)
@@ -189,7 +187,7 @@ def runAutoDetection():
             cv2.rectangle(frame, (x, y),(x + w, y + int(h / 2)), (255, 255, 0), 2)
             
             # don't log or control the cannon when in manual mode
-            if not autoActive:
+            if not tankActive or not autoActive:
                 continue
             
             center_x = int(x) + (int(w) / 2)
@@ -230,5 +228,6 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, threaded=True)
     endStream = True
 
+print("Exiting...")
 cannon.stop()
 car.stop()

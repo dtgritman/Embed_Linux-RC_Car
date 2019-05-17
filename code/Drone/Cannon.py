@@ -129,7 +129,7 @@ class StepperMotor:
         (1,0,0,1)
     ]
     
-    def __init__(self, pin_INA1, pin_INA2, pin_INB1, pin_INB2, motorSteps=200, motorRpm=50):
+    def __init__(self, pin_INA1, pin_INA2, pin_INB1, pin_INB2, motorSteps=200, motorRpm=130):
         self.pi = pigpio.pi()
         if not self.pi.connected:
             print("Pi not connected to pigpio.")
@@ -144,7 +144,7 @@ class StepperMotor:
         self.steps = motorSteps
         self.rpm = motorRpm
         self.pins = (pin_INA1, pin_INB1, pin_INA2, pin_INB2)
-        self.stepTime = motorSteps * motorRpm / 60000.0 / 100.0 # steps * rev/min * 60000ms / min 
+        self.stepTime = 60.0 / (motorRpm * motorSteps)
         
         self.lastStep_seq = 4
     

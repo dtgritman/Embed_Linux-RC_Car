@@ -117,7 +117,7 @@ function changeMode(mode) {
 
 function displayDetectionImage(datetime, image) {
     var htmlout = "Detection Date/Time: " + datetime + "<br>";
-    htmlout += "<img src='/img/" + image + "' alt='Where the hell is that image'>";
+    htmlout += "<img src='/static/img/" + image + "' alt='Where the hell is that image'>";
     $("#detections_display").html(htmlout);
 }
 

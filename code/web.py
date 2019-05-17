@@ -53,6 +53,7 @@ def index():
 # get the camera feed output
 def gen():
     global streamFrame, savedFrame
+    savedFrame = open('static/img/loading.jpg', 'rb').read()
     while True:
         if streamFrame != None:
             savedFrame = streamFrame
@@ -167,6 +168,9 @@ def runAutoDetection():
     con = sqlite.connect('../log/DetectionLogDB.db')
     cur = con.cursor()
     pic_number = 0
+    # find current picture number to start at
+    while os.path.exists('static/img/image%s.jpg' % pic_number):
+        pic_number += 1
     center_prevX = 0
     center_prevY = 0
     while True:
@@ -190,21 +194,27 @@ def runAutoDetection():
             center_x = int(x) + (int(w) / 2)
             center_y = int(y) + (int(h) / 2)
             #print("Coordinates of center are x:" + str((int(x) + int(w)/2)) + " y: " + str((int(y) + int(h)/2)))
-            # check for large movements of the box to indicate unique target? idk? maybe? hopefully?
+            
+            # checks if filename exists already, if not then writes file appending number that does not exist yet
+            while os.path.exists('static/img/image%s.jpg' % pic_number):
+                pic_number += 1
+            
+            # check for large movements of the center of the box, to indicate unique target for logging
             if (center_x - center_prevX) > 20 or (center_prevX - center_x) > 20 \
                 or (center_y - center_prevY) > 20 or (center_prevY - center_y) > 20:
-                # checks if filename exists already, if not then writes file appending number that does not exist yet
-                while os.path.exists('static/img/image%s.jpg' % pic_number):
-                    cv2.imwrite('static/img/image%s.jpg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                    # write timestamp, detection type, and image to SQLite db
-                    current_time = time.strftime("%Y-%m-%d %H:%M:%S") 
-                    detection_type = "unknown"
-                    image_name = ("image%s.jpg" % pic_number)
-                    cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES(?,?,?);', (current_time, detection_type, image_name))
-                    con.commit()
-                    pic_number += 1
-            cannon.setCannonPos(center_x, center_y)
-            cannon.fireCannon(1)
+                cv2.imwrite('static/img/image%s.jpg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                # write timestamp, detection type, and image to SQLite db
+                current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+                detection_type = "unknown"
+                image_name = ("image%s.jpg" % pic_number)
+                cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES(?,?,?);', (current_time, detection_type, image_name))
+                con.commit()
+                pic_number += 1
+                cannon.setCannonPos(center_x, center_y)
+                cannon.fireCannon(1)
+            
+            center_prevX = center_x
+            center_prevY = center_y
         # resize frame to 480p
         frame = cv2.resize(frame, (640, 480))
         ret, streamFrame = cv2.imencode('.jpg', frame)
@@ -220,7 +230,6 @@ if __name__ == '__main__':
         app.run(host='0.0.0.0', port=8080, threaded=True)
     except KeyboardInterrupt:
         t1.stop()
-        #vs.stop()
         pass
 
 cannon.stop()

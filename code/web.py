@@ -2,18 +2,19 @@
 from flask import Flask, render_template, request, Response
 import sqlite3 as sqlite
 import json
-from Drone.Cannon import TankCannon, StepperMotor
-from Drone.Car import Car
+# from Drone.Cannon import TankCannon, StepperMotor
+# from Drone.Car import Car
 from threading import Thread
 import io
 import time
 import cv2
-import picamera
-import picamera.array
+# import picamera
+# import picamera.array
 import numpy as np
-from imutils.video.pivideostream import PiVideoStream
+# from imutils.video.pivideostream import PiVideoStream
 import imutils
 import os
+from camera import VideoCamera
 
 # tank starts actived and in manual mode
 tankActive = 1
@@ -27,7 +28,7 @@ stepperAIN2 = 5
 stepperAIN1 = 6
 stepperBIN1 = 19
 stepperBIN2 = 26
-cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), stepper_GearRatio=3, rotationServo_Offset=50)
+# cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), stepper_GearRatio=3, rotationServo_Offset=50)
 
 # car gpio pins and intialization
 carSTBY = 27
@@ -37,7 +38,7 @@ carAIN1 = 18
 carBIN1 = 22
 carBIN2 = 23
 carPWMB = 24
-car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
+# car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
 
 app = Flask(__name__)
 
@@ -46,11 +47,13 @@ def index():
     global tankActive, autoActive
     tankActive = 1
     autoActive = 0
-    cannon.activate()
-    car.activate()
+    # cannon.activate()
+    # car.activate()
     return render_template('index.html')
 
 # get the camera feed output
+'''
+    Changed for gen(camera) for testing webcam
 def gen():
     global streamFrame, endStream
     endStream = False
@@ -64,9 +67,18 @@ def gen():
             yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + savedFrame + b'\r\n')
 
+'''
+
+def gen(camera):
+    while True:
+        frame = camera.get_frame()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
 @app.route('/videofeed')
 def video_feed():
-    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @app.route('/detectionlogs')
 def detectionLogJSON():

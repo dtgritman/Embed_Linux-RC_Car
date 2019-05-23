@@ -4,6 +4,7 @@ import cv2
 def nothing(x):
     pass
 
+# Finding percentage of parts
 def percentage(x, y):
   return int(100 * float(x)/float(y))
 

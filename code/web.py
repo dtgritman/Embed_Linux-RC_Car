@@ -40,6 +40,9 @@ carBIN2 = 23
 carPWMB = 24
 # car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
 
+
+videoFeed = VideoCamera()
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -77,8 +80,12 @@ def gen(camera):
 
 @app.route('/videofeed')
 def video_feed():
-    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen(videoFeed), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/mask', methods=['POST'])
+def mask():
+    
+    return
 
 @app.route('/detectionlogs')
 def detectionLogJSON():

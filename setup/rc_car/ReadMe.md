@@ -10,14 +10,14 @@
 ### Wiring 
 
 
-    STBY = Pin 13 (GPIO #27)    = Stand By
+    STBY = GPIO #17     = Stand By
 
     Drive motor:
-    PWMA = Pin 7  (GPIO #4)      = Speed
-    AIN2 = Pin 11 (GPIO #17)
-    AIN1 = Pin 12 (GPIO #18)
+    PWMA = GPIO #3      = Speed
+    AIN2 = GPIO #4
+    AIN1 = GPIO #18
 
     Left-Right controller:
-    BIN1 = Pin 15 (GPIO #22)
-    BIN2 = Pin 16 (GPIO #23)    
-    PWMB = Pin 18 (GPIO #24)    = Speed
+    BIN1 = GPIO #27
+    BIN2 = GPIO #23    
+    PWMB = GPIO #24    = Speed

@@ -1,13 +1,14 @@
+import time
 import pigpio
 
 class Car:
-    def __init__(self, STBY, PWMA, AIN2, AIN1, BIN1, BIN2, PWMB):
+    def __init__(self, STBY, PWMA, AIN2, AIN1, BIN1, BIN2, PWMB, sensorTrig=0, sensors=[]):
         self.pi = pigpio.pi()
         if not self.pi.connected:
             print("Pi not connected to pigpio.")
             return
         
-        # GPIO Pin locations
+        # GPIO Drive Pin locations
         self.STBY = STBY
         # drive motor
         self.drivePWM = PWMA
@@ -30,7 +31,22 @@ class Car:
         self.pi.set_PWM_frequency(PWMA, 50)
         self.pi.set_PWM_frequency(PWMB, 50)
         
-        # setup car
+        
+        # Sensor GPIO Pin locations
+        self.sensorTrig = sensorTrig
+        self.sensors = sensors
+        self.distances = []
+        for i in range(len(sensors)):
+            self.distances.append(0)
+        
+        # initialize sensor GPIO
+        if sensorTrig > 0:
+            self.pi.set_mode(sensorTrig, pigpio.OUTPUT)
+            for i in range(len(sensors)):
+                if sensors[i] > 0:
+                    self.pi.set_mode(sensors[i], pigpio.INPUT)
+        
+        # activate car
         self.activate()
     
     # activate motors
@@ -49,6 +65,9 @@ class Car:
         self.pi.write(self.steerIN1, 0)
         self.pi.write(self.steerIN2, 0)
         self.pi.set_PWM_dutycycle(self.steerPWM, 0)
+        if self.sensorTrig > 0:
+            # make sure sensors aren't triggered
+            self.pi.write(self.sensorTrig, False)
     
     # set drive motor
     def setDrive(self, direction, dutycycle=100):
@@ -81,6 +100,26 @@ class Car:
             self.pi.write(self.steerIN1, 0)
             self.pi.write(self.steerIN2, 0)
             self.pi.set_PWM_dutycycle(self.steerPWM, 0)
+    
+    # update sensors distance
+    def updateDistances(self):
+        if self.sensorTrig > 0:
+            startT = 0
+            for sensor in range(len(self.sensors)):
+                endT = 0
+                while self.pi.read(self.sensors[sensor]):
+                    endT = time.time()
+        
+                if startT == 0 or endT == 0:
+                    self.pi.write(self.sensorTrig, True)
+                    time.sleep(0.00001)
+                    self.pi.write(self.sensorTrig, False)
+                    while not self.pi.read(self.sensors[sensor]):
+                        startT = time.time()
+                    while self.pi.read(self.sensors[sensor]):
+                        endT = time.time()
+                # convert sound travel time to distance 
+                self.distances[sensor] = (endT - startT) * 17150
     
     # shut everything off and disconnect from pi
     def stop(self):

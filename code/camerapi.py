@@ -30,7 +30,7 @@ def find_level(matrix):
 
 class VideoCamera(object):
     def __init__(self):
-        self.video = PiVideoStream().start()
+        self.video = PiVideoStream(resolution=(640, 480)).start()
         self.face_cascade = cv2.CascadeClassifier('./object_detection/cascades/frontalface_default.xml')
     
     def get_frame(self):

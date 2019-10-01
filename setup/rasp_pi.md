@@ -6,7 +6,18 @@ Each part of the project is modularised for efficiency and fault prevention. Thi
 
 Note that to execute these commands you need to open the terminal by finding it in the programs menu or by connecting a keyboard to the raspberry pi and hitting CTRL + ALT + T
 
+Terminal- interface which lets you enter commands to perform tasks
+sudo- command which gives a user more access to critical system files (equivalent of administrator privilages on Windows)
+apt- the program that manages programs, allows you to install and remove programs
+OpenCV- set of tools which allow you to work with videos and images, applications include facial recognition
+Web server- computer which serves a web page to anyone connecting to it through the internet
+
+
 ##### Required Dependencies  
+**Note:** You will need to have installed Raspbian or Raspbian Lite on your Pi.
+If you don't know how to, follow the tutorial on the [Raspberry Pi Foundation's website](https://www.raspberrypi.org/documentation/installation/installing-images/)
+ 
+
 The webserver uses flask. If it's not already installed the in can be installed with:  
 ```bash
 $ sudo apt-get install python3-flask

@@ -65,19 +65,19 @@ class TankCannon:
         self.active = 0
     
     # set cannon position based on x,y coordinates
-    def setCannonPos(self, x, y, width=320, height=240):
+    def setCannonPos(self, x, y, width=320, height=240, fovX=54.0, fovY=41.0):
         midX = width / 2
         if x < midX:
-            xDegrees = -(midX - x) * (90.0 / width)
+            xDegrees = -(midX - x) * (fovX / width)
         else:
-            xDegrees = (x - midX) * (90.0 / width)
+            xDegrees = (x - midX) * (fovX / width)
         self.setBaseRotation(xDegrees)
         
         midY = height / 2
         if y < midY:
-            yDegrees = -(midY - y) * (180.0 / height)
+            yDegrees = (midY - y) * (fovY / height)
         else:
-            yDegrees = (y - midY) * (180.0 / height)
+            yDegrees = -(y - midY) * (fovY / height)
         self.setCannonAngle(yDegrees)
     
     # set the vertical angle of the cannon

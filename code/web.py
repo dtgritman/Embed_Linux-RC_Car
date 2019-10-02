@@ -163,6 +163,7 @@ def runAutoDetection():
     autoActive = 0
     streamActive = True
     camera = VideoCamera()
+    
     # setup connection to DetectionLog Database
     con = sqlite.connect('../log/DetectionLogDB.db')
     cur = con.cursor()
@@ -186,8 +187,6 @@ def runAutoDetection():
         
         # check if something is detected
         if detectCoords[0] > -1:
-            print('Detection Coordinates: ' + str(detectCoords))
-            
             # check for large movements of the center of the box, to indicate unique target for logging
             if abs(detectCoords[0] - prevDetectCoords[0]) > 20 or abs(detectCoords[1] - prevDetectCoords[1]) > 20:
                 cv2.imwrite('static/img/image%s.jpg' % logPictureNum, streamImage, [cv2.IMWRITE_JPEG_QUALITY, 90])
@@ -195,12 +194,12 @@ def runAutoDetection():
                 current_time = time.strftime("%Y-%m-%d %H:%M:%S")
                 detection_type = "unknown"
                 image_name = ("image%s.jpg" % logPictureNum)
-                cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES(?,?,?);', (current_time, detection_type, image_name))
+                cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES (?,?,?);', (current_time, detection_type, image_name))
                 con.commit()
                 logPictureNum += 1
-                cannon.setCannonPos(detectCoords[0], detectCoords[1])
-                cannon.fireCannon(1)
             
+            cannon.setCannonPos(detectCoords[0], detectCoords[1], camera.resolution[0], camera.resolution[1])
+            cannon.fireCannon(1)
             # store the detection coordinates for reference later
             prevDetectCoords = detectCoords
         else:

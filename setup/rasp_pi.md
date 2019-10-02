@@ -4,23 +4,36 @@ Each part of the project is modularised for efficiency and fault prevention. Thi
 
 ### Raspberry Pi - Setup
 
+Note that to execute these commands you need to open the terminal by finding it in the programs menu or by connecting a keyboard to the raspberry pi and hitting CTRL + ALT + T
+
+Terminal- interface which lets you enter commands to perform tasks
+sudo- command which gives a user more access to critical system files (equivalent of administrator privilages on Windows)
+apt- the program that manages programs, allows you to install and remove programs
+OpenCV- set of tools which allow you to work with videos and images, applications include facial recognition
+Web server- computer which serves a web page to anyone connecting to it through the internet
+
+
 ##### Required Dependencies  
+**Note:** You will need to have installed Raspbian or Raspbian Lite on your Pi.
+If you don't know how to, follow the tutorial on the [Raspberry Pi Foundation's website](https://www.raspberrypi.org/documentation/installation/installing-images/)
+ 
+
 The webserver uses flask. If it's not already installed the in can be installed with:  
-```
-~$ sudo apt-get install python3-flask
+```bash
+$ sudo apt-get install python3-flask
 ```  
 The tank control classes use pigpio to control the gpio. This library has better PWM signal control than RPi. To install this library use:  
-```
-~$ sudo apt-get install pigpio python3-pigpio
+```bash
+$ sudo apt-get install pigpio python3-pigpio
 ```
 This library requires the pigpio daemon to be running. This daemon can be started manually (only needs to be started once each boot) using:
-```
-~$ sudo pigpiod
+```bash
+$ sudo pigpiod
 ```
 or it can be set to run on system boot with:
-```
-~$ sudo systemctl enable pigpiod
-~$ sudo reboot
+```bash
+$ sudo systemctl enable pigpiod
+$ sudo reboot
 ```
 
 #### Hotspot Setup
@@ -32,25 +45,25 @@ We wanted to not be reliant on a router to connect to our Pi so we turned it int
 ##### 1. Installs
 Update your Pi
 ```bash
-~$ sudo apt-get update
-~$ sudo apt-get upgrade
+$ sudo apt-get update
+$ sudo apt-get upgrade
 ```
 
 Install all the required software:
 
 ```bash
-~$ sudo apt-get install dnsmasq hostapd
+$ sudo apt-get install dnsmasq hostapd
 ```
 
 Turn the new software off as follows:
 ```bash
-~$ sudo systemctl stop dnsmasq
-~$ sudo systemctl stop hostapd
+$ sudo systemctl stop dnsmasq
+$ sudo systemctl stop hostapd
 ```
 
 To ensure that an updated kernel is configured correctly after install, reboot:
 ```bash
-~$ sudo reboot 
+$ sudo reboot 
 ```
 
 ##### 2. Configuring a static IP
@@ -59,7 +72,7 @@ This documentation assumes that we are using the standard 192.168.x.x IP address
 
 To configure the static IP address, edit the dhcpcd configuration file with:
 ```bash 
-~$ sudo nano /etc/dhcpcd.conf
+$ sudo nano /etc/dhcpcd.conf
 ```
 
 Go to the end of the file and edit it so that it looks like:
@@ -72,15 +85,15 @@ interface wlan0
 Now restart the dhcpcd daemon and set up the new wlan0 configuration:
 
 ```bash
-~$ sudo service dhcpcd restart
+$ sudo service dhcpcd restart
 ```
 ##### 3. Configuring the DHCP server (dnsmasq)
 
 The DHCP service is provided by dnsmasq. By default, the configuration file contains a lot of information that is not needed, and it is easier to start from scratch. Rename this configuration file, and edit a new one:
 
 ```bash 
-~$ sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig  
-~$ sudo nano /etc/dnsmasq.conf
+$ sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig  
+$ sudo nano /etc/dnsmasq.conf
 ```
 
 Type or copy the following information into the dnsmasq configuration file and save it:
@@ -95,7 +108,7 @@ So for **wlan0**, we are going to provide IP addresses between 192.168.4.2 and 1
 You need to edit the hostapd configuration file. After initial install, this will be a new/empty file.
 
 ```bash
-~$ sudo nano /etc/hostapd/hostapd.conf
+$ sudo nano /etc/hostapd/hostapd.conf
 ```
 Add the information below to the configuration file. This configuration assumes we are using channel 7, with a network name of **HumanVsZombies**, and a password **letmeinrightnow**. Note that the name and password should not have quotes around them. The passphrase should be between 8 and 64 characters in length.
 
@@ -118,7 +131,7 @@ rsn_pairwise=CCMP
 We now need to tell the system where to find this configuration file.
 
 ```bash 
-~$ sudo nano /etc/default/hostapd
+$ sudo nano /etc/default/hostapd
 ```
 Find the line with #DAEMON_CONF, and replace it with this:
 ```
@@ -129,15 +142,15 @@ DAEMON_CONF="/etc/hostapd/hostapd.conf"
 **Now start up the remaining services:**
 
 ```bash
-~$ sudo systemctl start hostapd
-~$ sudo systemctl start dnsmasq
+$ sudo systemctl start hostapd
+$ sudo systemctl start dnsmasq
 ```
 
 **NOTE:** if sudo systemctl start hostapd fails to start and is masked you should use these commands to fix the issue:
 ```bash
-~$ sudo systemctl unmask hostapd
-~$ sudo systemctl enable hostapd
-~$ sudo systemctl start hostapd
+$ sudo systemctl unmask hostapd
+$ sudo systemctl enable hostapd
+$ sudo systemctl start hostapd
 ```
 
 **Add routing and masquerade**
@@ -150,11 +163,11 @@ net.ipv4.ip_forward=1
 
 Add a masquerade for outbound traffic on eth0:
 ```bash
-~$ sudo iptables -t nat -A  POSTROUTING -o eth0 -j MASQUERADE
+$ sudo iptables -t nat -A  POSTROUTING -o eth0 -j MASQUERADE
 ```
 Save the iptables rule.
 ```bash
-~$ sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+$ sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
 ```
 Edit _**/etc/rc.local**_ and add this just above **"exit 0"** to install these rules on boot.
 ```
@@ -166,7 +179,7 @@ The network SSID you specified in the hostapd configuration should now be presen
 
 If SSH is enabled on the Raspberry Pi access point, it should be possible to connect to it from another Linux box (or a system with SSH connectivity present) as follows, assuming the pi account is present:
 ```bash
-~$ ssh pi@192.168.4.1
+$ ssh pi@192.168.4.1
 ```
 By this point, the Raspberry Pi is acting as an access point, and other devices can associate with it. Associated devices can access the Raspberry Pi access point via its IP address for operations such as rsync, scp, or ssh.
 

@@ -4,14 +4,15 @@ Each part of the project is modularised for efficiency and fault prevention. Thi
 
 ### Raspberry Pi - Setup
 
-Note that to execute these commands you need to open the terminal by finding it in the programs menu or by connecting a keyboard to the raspberry pi and hitting CTRL + ALT + T
+Note that to execute these commands you need to open the terminal by finding it in the programs menu or by connecting a keyboard to the raspberry pi and pressing CTRL + ALT + T
 
 Terminal- interface which lets you enter commands to perform tasks
 sudo- command which gives a user more access to critical system files (equivalent of administrator privilages on Windows)
 apt- the program that manages programs, allows you to install and remove programs
 OpenCV- set of tools which allow you to work with videos and images, applications include facial recognition
 Web server- computer which serves a web page to anyone connecting to it through the internet
-
+Daemon- program that runs in the background
+Static IP- IP address that does not change
 
 ##### Required Dependencies  
 **Note:** You will need to have installed Raspbian or Raspbian Lite on your Pi.

@@ -37,7 +37,12 @@ carAIN1 = 18
 carBIN1 = 27
 carBIN2 = 23
 carPWMB = 24
-car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
+# car distance sensors gpio pins
+distanceTrig = 22
+distanceEchoL = 10
+distanceEchoF = 9
+distanceEchoR = 11
+car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB, distanceTrig, [distanceEchoL, distanceEchoF, distanceEchoR])
 
 
 app = Flask(__name__)
@@ -176,6 +181,12 @@ def runAutoDetection():
     prevDetectCoords = [0, 0]
     
     while streamActive:
+        '''
+        # Distance sensor reading causes hang up in code
+        car.updateDistances()
+        print(car.distances)
+        '''
+        
         # get the current frame and detection coords
         streamImage, detectCoords = camera.get_frame()
         ret, jpeg = cv2.imencode('.jpg', streamImage)

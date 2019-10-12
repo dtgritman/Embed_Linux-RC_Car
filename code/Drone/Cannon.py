@@ -64,21 +64,11 @@ class TankCannon:
         self.pi.set_servo_pulsewidth(self.rotationServoPin, 0)
         self.active = 0
     
-    # set cannon position based on x,y coordinates
-    def setCannonPos(self, x, y, width=320, height=240, fovX=54.0, fovY=41.0):
-        midX = width / 2
-        if x < midX:
-            xDegrees = -(midX - x) * (fovX / width)
-        else:
-            xDegrees = (x - midX) * (fovX / width)
-        self.setBaseRotation(xDegrees)
-        
-        midY = height / 2
-        if y < midY:
-            yDegrees = (midY - y) * (fovY / height)
-        else:
-            yDegrees = -(y - midY) * (fovY / height)
-        self.setCannonAngle(yDegrees)
+    # set the cannon state (0: off, 1: on)
+    def fireCannon(self, state):
+        if not self.active:
+            return
+        self.pi.write(self.cannonPin, self.cannonStates[state])
     
     # set the vertical angle of the cannon
     def setCannonAngle(self, degrees):
@@ -110,11 +100,22 @@ class TankCannon:
         
         self.pi.set_servo_pulsewidth(self.rotationServoPin, self.rotationServoMid + (degrees * self.rotationServoAngleConversion))
     
-    # set the cannon state (0: off, 1: on)
-    def fireCannon(self, state):
-        if not self.active:
-            return
-        self.pi.write(self.cannonPin, self.cannonStates[state])
+    # set cannon position based on x,y coordinates
+    #def setCannonPos(self, x, y, width=320, height=240, fovX=54.0, fovY=41.0, adjustAngle=20):
+    def setCannonPos(self, x, y, width=320, height=240, fovX=122.0, fovY=45.0, xAngleOffset=14, yAngleOffset=14):
+        midX = width / 2
+        if x < midX:
+            xDegrees = -((midX - x) / width) * fovX + xAngleOffset
+        else:
+            xDegrees = ((x - midX) / width) * fovX + xAngleOffset
+        self.setBaseRotation(xDegrees)
+        
+        midY = height / 2
+        if y < midY:
+            yDegrees = ((midY - y) / height) * fovY + yAngleOffset
+        else:
+            yDegrees = -((y - midY) / height) * fovY + yAngleOffset
+        self.setCannonAngle(yDegrees)
     
     # deactivate the cannon and stop the connection to the pigpio
     def stop(self):

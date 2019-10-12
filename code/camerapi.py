@@ -47,7 +47,7 @@ class VideoCamera(object):
         lower_red = np.array([0,184,82])
         upper_red = np.array([13,255,255])
         
-        mask = cv2.inRange(hsv, lower_red, upper_red)
+        #mask = cv2.inRange(hsv, lower_red, upper_red)
         
         center_x = -1
         center_y = -1
@@ -70,7 +70,7 @@ class VideoCamera(object):
             # Body rectangle
             cv2.rectangle(image,(body_x_start, body_y_start), (body_x_end, body_y_end),(255,100,0),  2) 
             
-            find_level(mask[body_x_start:body_x_end, body_y_start:body_y_end])
+            #find_level(mask[body_x_start:body_x_end, body_y_start:body_y_end])
             
             cv2.circle(image,(center_x, center_y), 10, (0,255,0), -1)
         

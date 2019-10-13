@@ -39,9 +39,9 @@ carBIN2 = 23
 carPWMB = 24
 # car distance sensors gpio pins
 distanceTrig = 22
-distanceEchoL = 10
-distanceEchoF = 9
-distanceEchoR = 11
+distanceEchoL = 9
+distanceEchoF = 11
+distanceEchoR = 10
 car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB, distanceTrig, [distanceEchoL, distanceEchoF, distanceEchoR])
 
 
@@ -181,27 +181,24 @@ def runAutoDetection():
     prevDetectCoords = [0, 0]
     
     while streamActive:
-        '''
-        # Distance sensor reading causes hang up in code
-        car.updateDistances()
-        print(car.distances)
-        '''
-        
         # get the current frame and detection coords
         streamImage, detectCoords = camera.get_frame()
         ret, jpeg = cv2.imencode('.jpg', streamImage)
         streamFrame = jpeg.tobytes()
         
-        # don't log or control the cannon when in manual mode
+        # don't control the car/cannon when in manual mode
         if not tankActive or not autoActive:
             continue
+        
+        car.updateDistances()
+        print("Distances: %s" % car.distances)
         
         # check if something is detected
         if detectCoords[0] > -1:
             # check for large movements of the center of the box, to indicate unique target for logging
-            if abs(detectCoords[0] - prevDetectCoords[0]) > 20 or abs(detectCoords[1] - prevDetectCoords[1]) > 20:
+            if abs(detectCoords[0] - prevDetectCoords[0]) > 30 or abs(detectCoords[1] - prevDetectCoords[1]) > 30:
                 cv2.imwrite('static/img/image%s.jpg' % logPictureNum, streamImage, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                # write timestamp, detection type, and image to SQLite db
+                # log the timestamp, detection type, and image to SQLite db
                 current_time = time.strftime("%Y-%m-%d %H:%M:%S")
                 detection_type = "unknown"
                 image_name = ("image%s.jpg" % logPictureNum)

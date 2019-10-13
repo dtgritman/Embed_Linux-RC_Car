@@ -42,9 +42,9 @@ class Car:
         # initialize sensor GPIO
         if sensorTrig > 0:
             self.pi.set_mode(sensorTrig, pigpio.OUTPUT)
-            for i in range(len(sensors)):
-                if sensors[i] > 0:
-                    self.pi.set_mode(sensors[i], pigpio.INPUT)
+            for sensor in range(len(sensors)):
+                if sensors[sensor] > 0:
+                    self.pi.set_mode(sensors[sensor], pigpio.INPUT)
         
         # activate car
         self.activate()
@@ -104,22 +104,45 @@ class Car:
     # update sensors distance
     def updateDistances(self):
         if self.sensorTrig > 0:
-            startT = 0
             for sensor in range(len(self.sensors)):
-                endT = 0
                 while self.pi.read(self.sensors[sensor]):
-                    endT = time.time()
-        
-                if startT == 0 or endT == 0:
-                    self.pi.write(self.sensorTrig, True)
-                    time.sleep(0.00001)
-                    self.pi.write(self.sensorTrig, False)
-                    while not self.pi.read(self.sensors[sensor]):
-                        startT = time.time()
-                    while self.pi.read(self.sensors[sensor]):
-                        endT = time.time()
-                # convert sound travel time to distance 
-                self.distances[sensor] = (endT - startT) * 17150
+                    continue
+                # trigger the sensors so they start reading
+                self.pi.write(self.sensorTrig, True)
+                time.sleep(0.000001)
+                self.pi.write(self.sensorTrig, False)
+                # wait until the sensor starts reading, if it takes longer than .001 seconds then something went wrong
+                startT = time.time()
+                while not self.pi.read(self.sensors[sensor]) and time.time() - startT < .001:
+                    continue
+                startT = time.time()
+                # wait for the sensor to become inactive which gives us the ending time
+                while self.pi.read(self.sensors[sensor]):
+                    continue
+                endT = time.time()
+                # convert the sensor readings to distance in centimeters
+                self.distances[sensor] = round((endT - startT) * 17150, 2)
+            
+            '''
+            # trial to read multiple sensors at once but was having issues
+            # definitely can be optimized better and needs code hang detection
+            startT = {}
+            endT = {}
+            self.pi.write(self.sensorTrig, True)
+            time.sleep(0.0000001)
+            self.pi.write(self.sensorTrig, False)
+            sensorCount = len(self.sensors)
+            while len(endT) < sensorCount:
+                for sensor in range(sensorCount):
+                    if sensor not in startT.keys():
+                        if self.pi.read(self.sensors[sensor]):
+                            startT[sensor] = time.time()
+                    elif not sensor in endT.keys():
+                        if not self.pi.read(self.sensors[sensor]):
+                            endT[sensor] = time.time()
+            for sensor in range(len(self.sensors)):
+                self.distances[sensor] = round((endT[sensor] - startT[sensor]) * 17150, 2)
+            '''
     
     # shut everything off and disconnect from pi
     def stop(self):

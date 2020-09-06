@@ -187,6 +187,14 @@ function toggleTankActive() {
     $.post('/tankactive', { "tankActive": tankActive });
 }
 
+
+$(document).on('input change', '#L0', function() {
+    
+    $('#slider_value').html( "L0" + $(this).val() );
+    console.log($(this).val())
+    $post('/mask')
+});
+
 // Make a specific element movable
 document.getElementById('drive_ball').onmousedown = drag;
 document.getElementById('cannon_ball').onmousedown = drag;

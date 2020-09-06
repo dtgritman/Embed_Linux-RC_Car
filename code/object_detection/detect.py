@@ -55,16 +55,20 @@ while True:
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(img,"(" + str(center_x) + " , " + str(center_y) + ")",(x,y - 10), font, 1, (200,255,155), 2, cv2.LINE_AA)
 
+        # cv2.putText(img,"Threat level: Potato",(x,y - 30), font, 1, (40,0,255), 2, cv2.LINE_AA)
+        
+
         cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
 
         # Body rectangle
         cv2.rectangle(img,(body_x_start, body_y_start), (body_x_end, body_y_end),(255,100,0),  2) 
 
-        find_level(mask[body_x_start:body_x_end, body_y_start:body_y_end])
+        #find_level(mask[body_y_start:body_y_end, body_x_start:body_x_end])
 
         cv2.circle(img,(center_x, center_y), 10, (0,255,0), -1)
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = img[y:y+h, x:x+w]
+        
+        close_up = img[y:y+h, x:x + w]
+       # cv2.imshow('face', close_up)
         
 
 
@@ -91,7 +95,7 @@ while True:
 
     #res = cv2.bitwise_and(frame, frame, mask= mask)
 
-    cv2.imshow('mask',mask)
+    #cv2.imshow('mask',mask)
     # Debuging 
     # cv2.imshow('res',res)
     # cv2.imshow('red', frame)

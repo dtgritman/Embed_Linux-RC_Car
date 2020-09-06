@@ -45,6 +45,9 @@ distanceEchoR = 10
 car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB, distanceTrig, [distanceEchoL, distanceEchoF, distanceEchoR])
 
 
+
+videoFeed = VideoCamera()
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -71,6 +74,10 @@ def gen():
 
 @app.route('/videofeed')
 def video_feed():
+    return Response(gen(videoFeed), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/mask', methods=['POST'])
+def mask():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/detectionlogs')

@@ -31,6 +31,10 @@ class VideoCamera(object):
     def __init__(self):
         self.video = cv2.VideoCapture(0)
         self.face_cascade = cv2.CascadeClassifier('./object_detection/cascades/frontalface_default.xml')
+        self.L = [0, 0, 0]
+        self.U = [255, 255, 255]
+        #lower_red = np.array([0,184,82])
+        #upper_red = np.array([13,255,255])
        
 
     def __del__(self):
@@ -45,11 +49,12 @@ class VideoCamera(object):
         faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
 
 
-        lower_red = np.array([0,184,82])
-        upper_red = np.array([13,255,255])
+        lower_red = np.array([self.L[0], self.L[1], self.L[2]])
+        upper_red = np.array([self.U[0], self.U[1], self.U[2]])
         
         mask = cv2.inRange(hsv, lower_red, upper_red)
-        
+        res = cv2.bitwise_and(image, image, mask= mask)
+
         for (x,y,w,h) in faces:
             center_x = x + int(w/2)
             center_y = y+ int(h/2)
@@ -70,9 +75,11 @@ class VideoCamera(object):
             # Body rectangle
             cv2.rectangle(image,(body_x_start, body_y_start), (body_x_end, body_y_end),(255,100,0),  2) 
             
-            find_level(mask[body_x_start:body_x_end, body_y_start:body_y_end])
+            #find_level(mask[body_x_start:body_x_end, body_y_start:body_y_end])
 
             cv2.circle(image,(center_x, center_y), 10, (0,255,0), -1)
+
+        image = res  
 
         ret, jpeg = cv2.imencode('.jpg', image)
         return jpeg.tobytes()

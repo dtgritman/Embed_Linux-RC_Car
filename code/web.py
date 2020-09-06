@@ -1,25 +1,24 @@
 # imports
 from flask import Flask, render_template, request, Response
+from threading import Thread
 import sqlite3 as sqlite
 import json
-# from Drone.Cannon import TankCannon, StepperMotor
-# from Drone.Car import Car
-from threading import Thread
-import io
 import time
 import cv2
-# import picamera
-# import picamera.array
 import numpy as np
-# from imutils.video.pivideostream import PiVideoStream
 import imutils
 import os
-from camera import VideoCamera
+
+# import custom car classes
+from camerapi import VideoCamera
+from Drone.Cannon import TankCannon, StepperMotor
+from Drone.Car import Car
 
 # tank starts actived and in manual mode
 tankActive = 1
 autoActive = 0
 streamFrame = None
+streamActive = True
 
 # cannon gpio pins and intialization
 pinCannon = 20
@@ -28,17 +27,23 @@ stepperAIN2 = 5
 stepperAIN1 = 6
 stepperBIN1 = 19
 stepperBIN2 = 26
-# cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), stepper_GearRatio=3, rotationServo_Offset=50)
+cannon = TankCannon(pinCannon, pinServo, StepperMotor(stepperAIN1, stepperAIN2, stepperBIN1, stepperBIN2), stepper_GearRatio=3, rotationServo_Offset=50)
 
 # car gpio pins and intialization
-carSTBY = 27
-carPWMA = 4
-carAIN2 = 17
+carSTBY = 17
+carPWMA = 3
+carAIN2 = 4
 carAIN1 = 18
-carBIN1 = 22
+carBIN1 = 27
 carBIN2 = 23
 carPWMB = 24
-# car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
+# car distance sensors gpio pins
+distanceTrig = 22
+distanceEchoL = 9
+distanceEchoF = 11
+distanceEchoR = 10
+car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB, distanceTrig, [distanceEchoL, distanceEchoF, distanceEchoR])
+
 
 
 videoFeed = VideoCamera()
@@ -50,33 +55,22 @@ def index():
     global tankActive, autoActive
     tankActive = 1
     autoActive = 0
-    # cannon.activate()
-    # car.activate()
+    cannon.activate()
+    car.activate()
     return render_template('index.html')
 
 # get the camera feed output
-'''
-    Changed for gen(camera) for testing webcam
 def gen():
-    global streamFrame, endStream
-    endStream = False
-    savedFrame = open('static/img/loading.jpg', 'rb').read()
-    while not endStream:
+    global streamFrame, streamActive
+    frame = open('static/img/loading.jpg', 'rb').read()
+    while streamActive:
         if streamFrame != None:
-            savedFrame = streamFrame
-            yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + streamFrame + b'\r\n')
-        else:
-            yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + savedFrame + b'\r\n')
-
-'''
-
-def gen(camera):
-    while True:
-        frame = camera.get_frame()
+            frame = streamFrame
+        
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+    
+    return ""
 
 @app.route('/videofeed')
 def video_feed():
@@ -84,8 +78,7 @@ def video_feed():
 
 @app.route('/mask', methods=['POST'])
 def mask():
-    
-    return
+    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/detectionlogs')
 def detectionLogJSON():
@@ -175,77 +168,65 @@ def cannonControl():
     
     return ""
 
+# the threaded function that runs the camera and the auto mode
 def runAutoDetection():
-    global tankActive, autoActive, streamFrame
+    global tankActive, autoActive, streamFrame, streamActive
     tankActive = 1
     autoActive = 0
+    streamActive = True
+    camera = VideoCamera()
     
-    shirt_cascade = cv2.CascadeClassifier('object_detection/body.xml')
-    #print(cv2.__version__)
-    vs = PiVideoStream().start()
-    time.sleep(2.0)
-    # connect to DetectionLog Database
+    # setup connection to DetectionLog Database
     con = sqlite.connect('../log/DetectionLogDB.db')
     cur = con.cursor()
-    pic_number = 0
+    logPictureNum = 0
+    
     # find current picture number to start at
-    while os.path.exists('static/img/image%s.jpg' % pic_number):
-        pic_number += 1
-    center_prevX = 0
-    center_prevY = 0
-    while True:
-        # captures frames individually from camera
-        frame = vs.read()
-        frame = imutils.resize(frame, width=240)
-        # convert to grayscale for cascade detection
-        gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-        shirts = shirt_cascade.detectMultiScale(gray, 1.02, 5)
-        # draws rectangle around any objects detected
-        for (x, y, w, h) in shirts:
-            # rectangle is half the height of body detected
-            cv2.rectangle(frame, (x, y),(x + w, y + int(h / 2)), (255, 255, 0), 2)
-            
-            # don't log or control the cannon when in manual mode
-            if not tankActive or not autoActive:
-                continue
-            
-            center_x = int(x) + (int(w) / 2)
-            center_y = int(y) + (int(h) / 2)
-            #print("Coordinates of center are x:" + str((int(x) + int(w)/2)) + " y: " + str((int(y) + int(h)/2)))
-            
-            # checks if filename exists already, if not then writes file appending number that does not exist yet
-            while os.path.exists('static/img/image%s.jpg' % pic_number):
-                pic_number += 1
-            
+    while os.path.exists('static/img/image%s.jpg' % logPictureNum):
+        logPictureNum += 1
+    
+    prevDetectCoords = [0, 0]
+    
+    while streamActive:
+        # get the current frame and detection coords
+        streamImage, detectCoords = camera.get_frame()
+        ret, jpeg = cv2.imencode('.jpg', streamImage)
+        streamFrame = jpeg.tobytes()
+        
+        # don't control the car/cannon when in manual mode
+        if not tankActive or not autoActive:
+            continue
+        
+        car.updateDistances()
+        print("Distances: %s" % car.distances)
+        
+        # check if something is detected
+        if detectCoords[0] > -1:
             # check for large movements of the center of the box, to indicate unique target for logging
-            if (center_x - center_prevX) > 20 or (center_prevX - center_x) > 20 \
-                or (center_y - center_prevY) > 20 or (center_prevY - center_y) > 20:
-                cv2.imwrite('static/img/image%s.jpg' % pic_number, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                # write timestamp, detection type, and image to SQLite db
+            if abs(detectCoords[0] - prevDetectCoords[0]) > 30 or abs(detectCoords[1] - prevDetectCoords[1]) > 30:
+                cv2.imwrite('static/img/image%s.jpg' % logPictureNum, streamImage, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                # log the timestamp, detection type, and image to SQLite db
                 current_time = time.strftime("%Y-%m-%d %H:%M:%S")
                 detection_type = "unknown"
-                image_name = ("image%s.jpg" % pic_number)
-                cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES(?,?,?);', (current_time, detection_type, image_name))
+                image_name = ("image%s.jpg" % logPictureNum)
+                cur.execute('INSERT INTO DetectionLogs(Date, Type, Image) VALUES (?,?,?);', (current_time, detection_type, image_name))
                 con.commit()
-                pic_number += 1
-                cannon.setCannonPos(center_x, center_y)
-                cannon.fireCannon(1)
+                logPictureNum += 1
             
-            center_prevX = center_x
-            center_prevY = center_y
-        # resize frame to 480p
-        frame = cv2.resize(frame, (640, 480))
-        ret, streamFrame = cv2.imencode('.jpg', frame)
-        streamFrame = streamFrame.tobytes()
-        
-    vs.stop()
+            cannon.setCannonPos(detectCoords[0], detectCoords[1], camera.resolution[0], camera.resolution[1])
+            cannon.fireCannon(1)
+            # store the detection coordinates for reference later
+            prevDetectCoords = detectCoords
+        else:
+            cannon.fireCannon(0)
+
 
 if __name__ == '__main__':
     t1 = Thread(target = runAutoDetection)
     t1.setDaemon(True)
     t1.start()
     app.run(host='0.0.0.0', port=8080, threaded=True)
-    endStream = True
+    streamActive = False
 
 print("Exiting...")
 cannon.stop()

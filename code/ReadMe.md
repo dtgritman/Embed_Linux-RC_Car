@@ -1,5 +1,7 @@
 ## This folder contains all the code related to the project
 
+All Pin values can be found in the `web.py` file
+
 | File | Description |
 |------|-------------|
 | [Drone/Cannon.py](Drone/Cannon.py) | This file contains the TankCannon class and StepperMotor class which can be used to control the tanks cannon by turning it left, right, up, and down, and turning the cannon on and off. |

@@ -118,7 +118,9 @@ def tank(tank):
         return False
 
 
-#------------ MAIN ------------
+#---------------- MAIN ----------------
+
+# cannon gpio pins and intialization
 pinCannon = 20
 pinServo = 21
 AIN2 = 5
@@ -127,14 +129,16 @@ BIN1 = 19
 BIN2 = 26
 cannon = TankCannon(pinCannon, pinServo, StepperMotor(AIN1, AIN2, BIN1, BIN2), 3)
 
-carSTBY = 27
-carPWMA = 4
-carAIN2 = 17
+# car gpio pins and intialization
+carSTBY = 17
+carPWMA = 3
+carAIN2 = 4
 carAIN1 = 18
-carBIN1 = 22
+carBIN1 = 27
 carBIN2 = 23
 carPWMB = 24
 car = Car(carSTBY, carPWMA, carAIN2, carAIN1, carBIN1, carBIN2, carPWMB)
+
 try:
     # run cannon while controller connected
     while tank(cannon):
@@ -148,3 +152,4 @@ except KeyboardInterrupt:
 
 finally:
     cannon.stop()
+    car.stop()
